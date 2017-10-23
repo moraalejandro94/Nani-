@@ -1,7 +1,11 @@
 class Player extends Ship implements UserInput{
+  float projectileMass;
+  Vec2 projectileForce;
 
-	Player(float x, float y, float mass){
-		super(x, y, mass);
+	Player(float x, float y, float mass, ArrayList<GameObject> objects){
+		super(x, y, mass, objects);
+    projectileMass = 10;
+    projectileForce = new Vec2(1000,0);
 	}
 
 	void update(){
@@ -42,10 +46,16 @@ class Player extends Ship implements UserInput{
   	}
 
   	void shoot() {
-    	if (keys[shoot]) {
-			//shoot();
+    	if (keys[shoot] && frameCount%10 == 0) {
+       Vec2 pos = box2d.getBodyPixelCoord(body);
+	 		 shoot(pos.x + mass + 2, pos.y, projectileMass, projectileForce);       
     	}
   	}
+
+    void shoot(float posX, float posY, float mass, Vec2 force){
+      Projectile p = new Projectile(posX, posY, mass, force);
+      objects.add(p);
+    }
 
   	void stopMovement(){
   		if (!(keys[moveUp] || keys[moveDown] || keys[moveLeft] || keys[moveRight])){
@@ -55,13 +65,15 @@ class Player extends Ship implements UserInput{
 
   	void movementController() {
   		moveUp();
-		moveLeft();
-		moveDown();
-		moveRight();
-		stopMovement();
-		shoot();
+  		moveLeft();
+  		moveDown();
+  		moveRight();
+  		stopMovement();
+  		shoot();
     	elapsed++;
   }
 
 
+
 }
+

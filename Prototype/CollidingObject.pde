@@ -12,7 +12,7 @@ class CollidingObject extends GameObject{
 		body = box2d.world.createBody(bd);
 
 		CircleShape cs = new CircleShape();
-		cs.setRadius(box2d.scalarPixelsToWorld(objectMass/2));
+		cs.setRadius(box2d.scalarPixelsToWorld(mass/2));
 
 		FixtureDef fd = new FixtureDef();
 		fd.setShape(cs);
@@ -28,8 +28,8 @@ class CollidingObject extends GameObject{
 
 	boolean inScreen() {
 		Vec2 pos = box2d.getBodyPixelCoord(body);
-		if (pos.y < height + objectMass && pos.y > 0 - objectMass 
-			&& pos.x < width + objectMass && pos.x > 0 - objectMass ) {      
+		if (pos.y < height + mass && pos.y > 0 - mass 
+			&& pos.x < width + mass && pos.x > 0 - mass ) {      
 			return true;
 		}
 		return false;
@@ -41,7 +41,7 @@ class CollidingObject extends GameObject{
 			pushMatrix();
 			translate(pos.x, pos.y);
 			fill(255,0,0);
-			ellipse(0, 0, objectMass, objectMass);
+			ellipse(0, 0, mass, mass);
 			popMatrix();
 		}
 	}

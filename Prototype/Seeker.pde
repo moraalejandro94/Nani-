@@ -1,18 +1,18 @@
 class Seeker extends Enemy {
 	float rotationSpeed;
 
-	Seeker(float x, float y, float mass, float rotationSpeed){
-		super(x,y,mass);
+	Seeker(float x, float y, float mass, float rotationSpeed, ArrayList<GameObject> objects){
+		super(x,y,mass, objects);
 		this.rotationSpeed = rotationSpeed;
 	}
 
 	void seek(Vec2 target) {
 	    Vec2 desired = target.sub(getPos());
 	    desired.normalize();
-	    desired.mulLocal(normalSpeed);
-	    println("speed: "+speed);
+	    desired.mulLocal(normalSpeed);	    
 	    Vec2 steering = desired.sub(new Vec2(speed.x, speed.y));
 	    steering = vec2Limit(steering,rotationSpeed);
+	    desired.mulLocal(normalSpeed);	    
 	    applyForce(steering);
   	}
 
@@ -24,12 +24,7 @@ class Seeker extends Enemy {
 	    fill(255,0,0);
 	    pushMatrix();
 	    translate(pos.x, pos.y);
-	    rotate(-a);
-	    beginShape();
-	    vertex(objectMass, 0);
-	    vertex(0, -objectMass/3);
-	    vertex(0, objectMass/3);
-	    endShape(CLOSE);
+	    ellipse(0, 0, this.mass, this.mass);
 	    popMatrix();
 	}
 

@@ -1,11 +1,11 @@
 abstract class GameObject{
 	 PVector objectPosition;
-	 float objectMass;
+	 float mass;
 	 
 
-	 GameObject(float posX, float posY, float objectMass){
+	 GameObject(float posX, float posY, float mass){
 	 	this.objectPosition = new PVector(posX, posY);
-	 	this.objectMass = objectMass;
+	 	this.mass = mass;
 	 }
 
 	 abstract void display();
