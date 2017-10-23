@@ -81,6 +81,10 @@ void displayStats(){
 	String score = String.valueOf(player.score);
 	fill(13, 108, 1);
 	text(score, width - textWidth(score), 60);
+	String hp = "HP : " + String.valueOf(player.hp);
+	fill(13, 108, 1);
+	text(hp, 0 + textWidth(hp), 60);
+
 }
 
 void draw(){
@@ -113,14 +117,16 @@ CollidingObject objectFromFixture(Fixture fixture){
 }
 
 void checkPlayer(CollidingObject object){
-	player.decreaseHP();
-	if(object instanceof Ship){
-		Ship s = (Ship)object;
-		objects.remove(s);			
-	} 
-	if(object instanceof Projectile){
-		Projectile p = (Projectile)object;
-		player.projectiles.remove(p);
+	if (!player.recovering){
+		player.decreaseHP();
+		if(object instanceof Ship){
+			Ship s = (Ship)object;
+			objects.remove(s);			
+		} 
+		if(object instanceof Projectile){
+			Projectile p = (Projectile)object;
+			player.projectiles.remove(p);
+		}
 	}
 }
 

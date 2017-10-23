@@ -104,6 +104,10 @@ public void displayStats(){
 	String score = String.valueOf(player.score);
 	fill(13, 108, 1);
 	text(score, width - textWidth(score), 60);
+	String hp = "HP : " + String.valueOf(player.hp);
+	fill(13, 108, 1);
+	text(hp, 0 + textWidth(hp), 60);
+
 }
 
 public void draw(){
@@ -136,14 +140,16 @@ public CollidingObject objectFromFixture(Fixture fixture){
 }
 
 public void checkPlayer(CollidingObject object){
-	player.decreaseHP();
-	if(object instanceof Ship){
-		Ship s = (Ship)object;
-		objects.remove(s);			
-	} 
-	if(object instanceof Projectile){
-		Projectile p = (Projectile)object;
-		player.projectiles.remove(p);
+	if (!player.recovering){
+		player.decreaseHP();
+		if(object instanceof Ship){
+			Ship s = (Ship)object;
+			objects.remove(s);			
+		} 
+		if(object instanceof Projectile){
+			Projectile p = (Projectile)object;
+			player.projectiles.remove(p);
+		}
 	}
 }
 
@@ -321,7 +327,8 @@ public int getOppositeDirection(int direction){
 class Player extends Ship implements UserInput{
   float projectileMass;
   Vec2 projectileForce;
-  int score;
+  int score, recoveringElapsed, recoveryTime;
+  boolean recovering = false;
 
   Player(float x, float y, float mass){
     super(x, y, mass);
@@ -329,11 +336,20 @@ class Player extends Ship implements UserInput{
     projectileForce = new Vec2(20000,0);
     hp = 3;
     score = 0;
+    recoveryTime = 120;
   }
 
   public void update(){
     movementController();
-    super.update();
+    super.update();    
+  }
+
+  public void decreaseHP(){
+    if (!recovering){
+      super.decreaseHP();
+      recovering = true;
+      recoveringElapsed = 0;
+    }
   }
 
   public void move(int direction) {
@@ -395,10 +411,29 @@ public void movementController() {
   stopMovement();
   shoot();
   elapsed++;
+  recoveringElapsed++;
+  if (recoveringElapsed > recoveryTime){
+    recovering = false;    
+  }
 }
 
 public void display(){
-  super.display();
+  if (inScreen()){
+    Vec2 pos = box2d.getBodyPixelCoord(body);
+    pushMatrix();
+    translate(pos.x, pos.y);      
+    fill(0,255,0);
+    ellipse(0, 0, mass, mass);
+    popMatrix();
+  }
+  if (inScreen() && recovering){
+    Vec2 pos = box2d.getBodyPixelCoord(body);
+    pushMatrix();
+    translate(pos.x, pos.y);      
+    fill(0,0,255);
+    ellipse(0, 0, mass, mass);
+    popMatrix();
+  }
   for(Projectile p : projectiles){
     p.display();
   }
