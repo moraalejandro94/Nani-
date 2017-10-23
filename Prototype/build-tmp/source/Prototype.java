@@ -52,36 +52,39 @@ public void playerInit(){
 }
 
 public void box2dInit() {
-  box2d = new Box2DProcessing(this);
-  box2d.createWorld();
-  box2d.setGravity(0,0);
-  box2d.listenForCollisions();
+	box2d = new Box2DProcessing(this);
+	box2d.createWorld();
+	box2d.setGravity(0,0);
+	box2d.listenForCollisions();
 }
 
 public void draw(){
 	background(0);
 	box2d.step();
 
-
-
 	for(GameObject o : objects){
 		o.update();
 		o.display();
 	}	
-	
-    
-
 }
 
 
 public void beginContact(Contact c) {
-	println("caca");
-  CollidingObject o1 = objectFromFixture(c.getFixtureA());
-  CollidingObject o2 = objectFromFixture(c.getFixtureB());
-  if (o1 instanceof Player){
-  	checkPlayer(o2);
-  }
+	CollidingObject o1 = objectFromFixture(c.getFixtureA());
+	CollidingObject o2 = objectFromFixture(c.getFixtureB());
+	if (o1 instanceof Player){
+		checkPlayer(o2);
+	}
+	if (o1 instanceof Ship && o2 instanceof Projectile){
+		Ship s = (Ship)o1;
+		s.decreaseHP();
+		if(s.dead){
+			objects.remove(s);
+		}
+	}
+
 }
+
 public void endContact(Contact c) {}
 
 public CollidingObject objectFromFixture(Fixture fixture){
@@ -95,11 +98,11 @@ public void checkPlayer(CollidingObject o2){
 }
 
 public void keyPressed(){
-  keys[keyCode] = true;
+	keys[keyCode] = true;
 }
 
 public void keyReleased(){
-  keys[keyCode] = false;
+	keys[keyCode] = false;
 }
 class CollidingObject extends GameObject{
 	Body body;
@@ -261,7 +264,7 @@ class Player extends Ship implements UserInput{
   Player(float x, float y, float mass){
     super(x, y, mass);
     projectileMass = 10;
-    projectileForce = new Vec2(10000,0);
+    projectileForce = new Vec2(20000,0);
   }
 
   public void update(){
@@ -408,7 +411,9 @@ class Ship extends CollidingObject{
 	int hp, elapsed;
 	PVector speed;
 	float normalSpeed, boostSpeed;
+	boolean dead;
 	ArrayList<Projectile> projectiles;
+
 
 	Ship(float x, float y, float mass){
 		super(x, y, mass);
@@ -417,13 +422,38 @@ class Ship extends CollidingObject{
 		normalSpeed = 0;
 		boostSpeed = 0;
 		elapsed = 0;
+		dead = false;
 		this.projectiles = new ArrayList();
 	}
 
 	public void update(){
 		super.update();
 		speed.mult(0);
+		if (hp <= 0){
+			die();
+		}
 	}
+
+	public void decreaseHP(){
+		this.hp--;
+	}
+
+	public void die(){		
+		this.dead = true;
+		println("dead: "+dead);
+	}
+
+	public void display(){
+		if (!dead && inScreen()){
+			Vec2 pos = box2d.getBodyPixelCoord(body);
+			pushMatrix();
+			translate(pos.x, pos.y);
+			fill(255,0,0);
+			ellipse(0, 0, mass, mass);
+			popMatrix();
+		}
+	}
+
 }
 interface UserInput{
 	char moveUp = 'W';

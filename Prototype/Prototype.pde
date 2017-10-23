@@ -29,36 +29,39 @@ void playerInit(){
 }
 
 void box2dInit() {
-  box2d = new Box2DProcessing(this);
-  box2d.createWorld();
-  box2d.setGravity(0,0);
-  box2d.listenForCollisions();
+	box2d = new Box2DProcessing(this);
+	box2d.createWorld();
+	box2d.setGravity(0,0);
+	box2d.listenForCollisions();
 }
 
 void draw(){
 	background(0);
 	box2d.step();
 
-
-
 	for(GameObject o : objects){
 		o.update();
 		o.display();
 	}	
-	
-    
-
 }
 
 
 void beginContact(Contact c) {
-	println("caca");
-  CollidingObject o1 = objectFromFixture(c.getFixtureA());
-  CollidingObject o2 = objectFromFixture(c.getFixtureB());
-  if (o1 instanceof Player){
-  	checkPlayer(o2);
-  }
+	CollidingObject o1 = objectFromFixture(c.getFixtureA());
+	CollidingObject o2 = objectFromFixture(c.getFixtureB());
+	if (o1 instanceof Player){
+		checkPlayer(o2);
+	}
+	if (o1 instanceof Ship && o2 instanceof Projectile){
+		Ship s = (Ship)o1;
+		s.decreaseHP();
+		if(s.dead){
+			objects.remove(s);
+		}
+	}
+
 }
+
 void endContact(Contact c) {}
 
 CollidingObject objectFromFixture(Fixture fixture){
@@ -72,9 +75,9 @@ void checkPlayer(CollidingObject o2){
 }
 
 void keyPressed(){
-  keys[keyCode] = true;
+	keys[keyCode] = true;
 }
 
 void keyReleased(){
-  keys[keyCode] = false;
+	keys[keyCode] = false;
 }
