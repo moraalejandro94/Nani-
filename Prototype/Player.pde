@@ -1,7 +1,8 @@
 class Player extends Ship implements UserInput{
   float projectileMass;
   Vec2 projectileForce;
-  int score;
+  int score, recoveringElapsed, recoveryTime;
+  boolean recovering = false;
 
   Player(float x, float y, float mass){
     super(x, y, mass);
@@ -9,11 +10,20 @@ class Player extends Ship implements UserInput{
     projectileForce = new Vec2(20000,0);
     hp = 3;
     score = 0;
+    recoveryTime = 120;
   }
 
   void update(){
     movementController();
-    super.update();
+    super.update();    
+  }
+
+  void decreaseHP(){
+    if (!recovering){
+      super.decreaseHP();
+      recovering = true;
+      recoveringElapsed = 0;
+    }
   }
 
   void move(int direction) {
@@ -75,10 +85,29 @@ void movementController() {
   stopMovement();
   shoot();
   elapsed++;
+  recoveringElapsed++;
+  if (recoveringElapsed > recoveryTime){
+    recovering = false;    
+  }
 }
 
 void display(){
-  super.display();
+  if (inScreen()){
+    Vec2 pos = box2d.getBodyPixelCoord(body);
+    pushMatrix();
+    translate(pos.x, pos.y);      
+    fill(0,255,0);
+    ellipse(0, 0, mass, mass);
+    popMatrix();
+  }
+  if (inScreen() && recovering){
+    Vec2 pos = box2d.getBodyPixelCoord(body);
+    pushMatrix();
+    translate(pos.x, pos.y);      
+    fill(0,0,255);
+    ellipse(0, 0, mass, mass);
+    popMatrix();
+  }
   for(Projectile p : projectiles){
     p.display();
   }
