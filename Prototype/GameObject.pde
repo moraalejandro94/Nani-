@@ -7,9 +7,8 @@ abstract class GameObject{
 	 	this.objectPosition = new PVector(posX, posY);
 	 	this.mass = mass;
 	 }
-
-	 abstract void display();
 	 
+	 abstract void display();
 	 abstract void update();
 
 }
