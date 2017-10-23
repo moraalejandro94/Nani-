@@ -1,5 +1,5 @@
 class Particle extends GameObject{
-  PVector pos,speed,acc;
+  PVector speed,acc;
   float mass, friction, lifeSpan, decay;
 
   Particle(float x, float y, float mass){
@@ -32,4 +32,11 @@ class Particle extends GameObject{
   boolean isDead(){
     return lifeSpan <= 0;
   }
+
+  boolean near(CollidingObject target){
+    float distance = PVector.dist(objectPosition, target.getPixelPos());
+    return distance <= target.mass;
+  }
+
+  void kill(){}
 }

@@ -1,14 +1,10 @@
 class Player extends Ship implements UserInput{
-  float projectileMass;
-  Vec2 projectileForce;
   int score, recoveringElapsed, recoveryTime, blinkElapsed, blinkTime;
   boolean recovering = false;
   boolean display = true;
 
   Player(float x, float y, float mass){
     super(x, y, mass);
-    projectileMass = 10;
-    projectileForce = new Vec2(20000,0);
     hp = 3;
     score = 0;
     recoveryTime = 120;
@@ -64,7 +60,7 @@ class Player extends Ship implements UserInput{
  }
 
  void shoot() {
-   if (keys[shoot] && elapsed > shotSpeed) {
+   if (keys[shoot]) {
      shootProjectile();
    }
  }

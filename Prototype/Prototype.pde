@@ -15,12 +15,14 @@ Seeker seeker;
 Box2DProcessing box2d;
 boolean[] keys = new boolean[1024];
 ArrayList<GameObject> objects;
+ArrayList<GameObject> garbage;
 
 void setup(){
 	frameRate(60);
 	fullScreen();
 	background(0);
 	objects = new ArrayList();
+	garbage = new ArrayList();
 	box2dInit();
 	playerInit();
 	colorsInit();
@@ -47,6 +49,7 @@ void box2dInit() {
 
 void displayGame(){
 	background(0);
+	garbageCollector();
 	box2d.step();
 	for(GameObject o : objects){
 		o.update();
@@ -61,7 +64,7 @@ void updateGame(){
 		s.normalSpeed = random(15, 25);
 		s.score = 10;
 		objects.add(s);
-	}		
+	}
 }
 
 void displayPause(){
@@ -109,10 +112,10 @@ void beginContact(Contact c) {
 		checkPlayer(o2);
 	}else if(o1 instanceof Enemy){
 		checkEnemy((Enemy) o1, o2);
+	}else if (o1 instanceof Projectile){
+		checkProyectile((Projectile) o1, o2);
 	}
 }
-
-void endContact(Contact c) {}
 
 CollidingObject objectFromFixture(Fixture fixture){
 	Body body = fixture.getBody();
@@ -122,28 +125,38 @@ CollidingObject objectFromFixture(Fixture fixture){
 
 void checkPlayer(CollidingObject object){
 	player.decreaseHP();
-	if(object instanceof Ship){
-		Ship s = (Ship)object;
-		objects.remove(s);			
-	} 
-	if(object instanceof Projectile){
-		Projectile p = (Projectile)object;
-		player.projectiles.remove(p);
-	}
+	object.decreaseHP();
+	addToGarbage(object);
+}
+
+void shootEnemy(Projectile p, Enemy e){
+		e.decreaseHP();
+		p.decreaseHP();
+		addToGarbage(p);
 }
 
 void checkEnemy(Enemy enemy, CollidingObject object){
 	if (object instanceof Projectile){
-		enemy.decreaseHP();
-		Projectile projectiles = (Projectile)object;
-		player.projectiles.remove(projectiles);
+		shootEnemy((Projectile)object, enemy);
 	}
+	checkEnemy(enemy);
+}
+
+void checkEnemy(Enemy enemy){
 	if(enemy.dead){
-		objects.remove(enemy);
+		addToGarbage(enemy);
 		PVector pos = enemy.getPixelPos();
 		ParticleSystem particleSystem = new ParticleSystem(pos.x, pos.y,enemy.score);
 		objects.add(particleSystem);
 		player.score += enemy.score;
+	}
+}
+
+void checkProyectile(Projectile projectile, CollidingObject object){
+	if (object instanceof Enemy){
+		Enemy enemy = (Enemy)object;
+		shootEnemy(projectile, enemy);
+		checkEnemy(enemy);
 	}
 }
 
@@ -158,3 +171,21 @@ void keyReleased(){
 	keys[keyCode] = false;
 }
 
+void addToGarbage(GameObject object){
+	if (object.dead){
+		garbage.add(object);
+	}
+}
+
+void garbageCollector(){
+	for(GameObject o: garbage){
+		if (o instanceof Projectile){
+			Projectile p = (Projectile)o;
+			p.owner.projectiles.remove(p);
+		}
+		objects.remove(o);
+		o.kill();
+	}
+}
+
+void endContact(Contact c) {}

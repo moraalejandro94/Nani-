@@ -23,7 +23,7 @@ class ParticleSystem extends GameObject{
 		while (i.hasNext()) {
 			Particle p = i.next();
 			p.update();
-			if (p.isDead()){
+			if (p.isDead() || p.near(player)){
 				i.remove();
 			}
 		}
@@ -48,5 +48,9 @@ class ParticleSystem extends GameObject{
 		dir.setMag(randomGaussian()*1 + 1);
 		p.applyForce(dir);
 		particles.add(p);
+	}
+
+	void kill(){
+		
 	}
 }

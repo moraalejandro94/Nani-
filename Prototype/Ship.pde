@@ -1,9 +1,10 @@
 class Ship extends CollidingObject{
-	int hp, elapsed, shotSpeed;
+	int elapsed, shotSpeed;
 	PVector speed;
 	float normalSpeed, boostSpeed;
-	boolean dead;
 	ArrayList<Projectile> projectiles;
+	float projectileMass;
+  	Vec2 projectileForce;
 
 
 	Ship(float x, float y, float mass){
@@ -13,25 +14,15 @@ class Ship extends CollidingObject{
 		normalSpeed = 0;
 		boostSpeed = 0;
 		elapsed = 0;
-		dead = false;
 		shotSpeed = 10;
+		projectileMass = 10;
+    		projectileForce = new Vec2(20000,0);
 		this.projectiles = new ArrayList();
 	}
 
 	void update(){
 		super.update();
 		speed.mult(0);
-	}
-
-	void decreaseHP(){
-		this.hp--;
-		if (hp <= 0){
-			die();
-		}
-	}
-
-	void die(){		
-		this.dead = true;
 	}
 
 	void display(){
@@ -43,6 +34,15 @@ class Ship extends CollidingObject{
 			ellipse(0, 0, mass, mass);
 			popMatrix();
 		}
+	}
+
+	void shootProjectile(){
+		if(elapsed > shotSpeed){
+			Vec2 pos = box2d.getBodyPixelCoord(body);
+			elapsed = 0;
+			Projectile p = new Projectile(pos.x + mass, pos.y, projectileMass, projectileForce, this);
+	  		projectiles.add(p);
+  		}
 	}
 
 }
