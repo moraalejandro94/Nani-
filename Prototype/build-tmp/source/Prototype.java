@@ -46,7 +46,7 @@ public void playerInit(){
 	player = new Player(width/2, height/2, 40);
 	player.normalSpeed = 100;
 	seeker = new Seeker(100, 100, 40, 50);
-	seeker.normalSpeed = 10;
+	seeker.normalSpeed = 10;	
 	objects.add(player);
 	objects.add(seeker);
 }
@@ -80,6 +80,19 @@ public void beginContact(Contact c) {
 		s.decreaseHP();
 		if(s.dead){
 			objects.remove(s);
+		}
+		Projectile p = (Projectile)o2;
+		player.projectiles.remove(p);
+	}
+	if (o1 instanceof Player){		
+		player.decreaseHP();
+		if(o2 instanceof Ship){
+			Ship s = (Ship)o2;
+			objects.remove(s);			
+		} 
+		if(o2 instanceof Projectile){
+			Projectile p = (Projectile)o2;
+			player.projectiles.remove(p);
 		}
 	}
 
@@ -123,6 +136,7 @@ class CollidingObject extends GameObject{
 		FixtureDef fd = new FixtureDef();
 		fd.setShape(cs);
 		fd.setDensity(0);
+		fd.setRestitution(0);
 
 		body.createFixture(fd);
 		body.setUserData(this);
@@ -195,7 +209,7 @@ class CollidingObject extends GameObject{
 	public void update(){}
 }
 class Enemy extends Ship {
-
+	int score, cost;	
 	Enemy (float x, float y, float mass){
 		super(x,y,mass);
 	}
@@ -265,6 +279,7 @@ class Player extends Ship implements UserInput{
     super(x, y, mass);
     projectileMass = 10;
     projectileForce = new Vec2(20000,0);
+    hp = 3;
   }
 
   public void update(){
@@ -349,7 +364,7 @@ class Projectile extends CollidingObject{
 	
 	Projectile(float posX, float posY, float mass, Vec2 force){
 		super(posX,posY,mass);
-		applyForce(force);
+		applyForce(force);		
 	}
 
 	public void display(){

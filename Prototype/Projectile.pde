@@ -3,7 +3,7 @@ class Projectile extends CollidingObject{
 	
 	Projectile(float posX, float posY, float mass, Vec2 force){
 		super(posX,posY,mass);
-		applyForce(force);
+		applyForce(force);		
 	}
 
 	void display(){

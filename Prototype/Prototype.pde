@@ -23,7 +23,7 @@ void playerInit(){
 	player = new Player(width/2, height/2, 40);
 	player.normalSpeed = 100;
 	seeker = new Seeker(100, 100, 40, 50);
-	seeker.normalSpeed = 10;
+	seeker.normalSpeed = 10;	
 	objects.add(player);
 	objects.add(seeker);
 }
@@ -57,6 +57,19 @@ void beginContact(Contact c) {
 		s.decreaseHP();
 		if(s.dead){
 			objects.remove(s);
+		}
+		Projectile p = (Projectile)o2;
+		player.projectiles.remove(p);
+	}
+	if (o1 instanceof Player){		
+		player.decreaseHP();
+		if(o2 instanceof Ship){
+			Ship s = (Ship)o2;
+			objects.remove(s);			
+		} 
+		if(o2 instanceof Projectile){
+			Projectile p = (Projectile)o2;
+			player.projectiles.remove(p);
 		}
 	}
 

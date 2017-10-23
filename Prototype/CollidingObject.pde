@@ -17,6 +17,7 @@ class CollidingObject extends GameObject{
 		FixtureDef fd = new FixtureDef();
 		fd.setShape(cs);
 		fd.setDensity(0);
+		fd.setRestitution(0);
 
 		body.createFixture(fd);
 		body.setUserData(this);

@@ -6,6 +6,7 @@ class Player extends Ship implements UserInput{
     super(x, y, mass);
     projectileMass = 10;
     projectileForce = new Vec2(20000,0);
+    hp = 3;
   }
 
   void update(){
