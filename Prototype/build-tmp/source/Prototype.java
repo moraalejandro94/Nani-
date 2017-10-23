@@ -46,24 +46,17 @@ public void setup(){
 	frameRate(60);
 	
 	background(0);
-	objects = new ArrayList();
-	garbage = new ArrayList();
 	box2dInit();
-	playerInit();
+	gameInit();
 	colorsInit();
 }
 
+// Inicializa todos los colores usados en el juego
 public void colorsInit(){
 	pointsColor = color(13, 108, 1);
 }
 
-public void playerInit(){	
-	player = new Player(width/2, height/2, 40);
-	player.normalSpeed = 100;
-	objects.add(player);
-}
-
-
+// Inicializa el mundo de box2d
 public void box2dInit() {
 	box2d = new Box2DProcessing(this);
 	box2d.createWorld();
@@ -71,7 +64,16 @@ public void box2dInit() {
 	box2d.listenForCollisions();
 }
 
+// Inicializa el jugador y los elementos del juego
+public void gameInit(){	
+	objects = new ArrayList();
+	garbage = new ArrayList();
+	player = new Player(width/2, height/2, 40);
+	player.normalSpeed = 100;
+	objects.add(player);
+}
 
+// Muestra el juego y poine a correr el mundo
 public void displayGame(){
 	background(0);
 	garbageCollector();
@@ -82,6 +84,7 @@ public void displayGame(){
 	}	
 }
 
+// Actualiza los elementos del juego
 public void updateGame(){
 	if (frameCount % 60 == 0){
 		Seeker s = new Seeker(width - random(100, 300), random(100, height - 100), random(30, 60), random(60, 70));
@@ -92,6 +95,7 @@ public void updateGame(){
 	}
 }
 
+// Muestra los elementos del juego pero no los actualiza y muestra el men\u00fa de pausa
 public void displayPause(){
 	for(GameObject o : objects){
 		o.display();
@@ -105,6 +109,7 @@ public void displayPause(){
 	text("PAUSED", width/2, height/2);
 }
 
+// Muestra las estad\u00edsticas del juego como el puntaje y la vida del jugador
 public void displayStats(){
 	stroke(16, 87,  177, 60);
 	noFill();
@@ -119,6 +124,7 @@ public void displayStats(){
 	text(hp, 0 + textWidth(hp), 60);
 }
 
+
 public void draw(){
 	if (!pause) {
 		displayGame();
@@ -129,7 +135,14 @@ public void draw(){
 	displayStats();
 }
 
+// Obtenemos el objecto a partir del fixture
+public CollidingObject objectFromFixture(Fixture fixture){
+	Body body = fixture.getBody();
+	Object object = body.getUserData();
+	return (CollidingObject) object;
+}
 
+// Se revisa el inicio de la colisi\u00f3n de 2 objetos
 public void beginContact(Contact c) {
 	CollidingObject o1 = objectFromFixture(c.getFixtureA());
 	CollidingObject o2 = objectFromFixture(c.getFixtureB());
@@ -142,24 +155,21 @@ public void beginContact(Contact c) {
 	}
 }
 
-public CollidingObject objectFromFixture(Fixture fixture){
-	Body body = fixture.getBody();
-	Object object = body.getUserData();
-	return (CollidingObject) object;
-}
-
+// Revisamos todas las posibles colisiones de un jugador
 public void checkPlayer(CollidingObject object){
 	player.decreaseHP();
 	object.decreaseHP();
 	addToGarbage(object);
 }
 
+// Se hace la acci\u00f3n de dispararle a un enemigo
 public void shootEnemy(Projectile p, Enemy e){
 		e.decreaseHP();
 		p.decreaseHP();
 		addToGarbage(p);
 }
 
+// Se revisa todas las posibles colisiones de un enemigo con otro objeto
 public void checkEnemy(Enemy enemy, CollidingObject object){
 	if (object instanceof Projectile){
 		shootEnemy((Projectile)object, enemy);
@@ -167,6 +177,7 @@ public void checkEnemy(Enemy enemy, CollidingObject object){
 	checkEnemy(enemy);
 }
 
+// Se revisa el estado del enemigo
 public void checkEnemy(Enemy enemy){
 	if(enemy.dead){
 		addToGarbage(enemy);
@@ -177,6 +188,7 @@ public void checkEnemy(Enemy enemy){
 	}
 }
 
+// Se revisa todas las posibles colisiones de un proyectil con otro objeto
 public void checkProyectile(Projectile projectile, CollidingObject object){
 	if (object instanceof Enemy){
 		Enemy enemy = (Enemy)object;
@@ -196,12 +208,14 @@ public void keyReleased(){
 	keys[keyCode] = false;
 }
 
+// Agregamos los objetos a eliminar del array principal
 public void addToGarbage(GameObject object){
 	if (object.dead){
 		garbage.add(object);
 	}
 }
 
+// Limpiamos el array principal
 public void garbageCollector(){
 	for(GameObject o: garbage){
 		if (o instanceof Projectile){
