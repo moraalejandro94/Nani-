@@ -183,6 +183,47 @@ public void keyReleased(){
 	keys[keyCode] = false;
 }
 
+class Agent extends GameObject{
+  PVector vel;
+  PVector acc;
+  float maxSpeed, maxForce;
+  GameObject target;
+
+  Agent(float x, float y, float mass) {
+    super(x, y, mass);
+    this.maxSpeed = 2;
+    this.vel = new PVector(0, 0);
+    acc = new PVector(0, 0);
+  }
+
+  public void update() {
+    vel.add(acc);
+    vel.limit(maxSpeed);
+    objectPosition.add(vel);
+    acc.mult(0);
+  }
+  public void applyForce(PVector force) {
+    PVector f = PVector.div(force, mass);
+    acc.add(f);
+  }
+  public void seek(PVector target) {
+    PVector desired = PVector.sub(target,  objectPosition);
+    desired.setMag(maxSpeed);
+    PVector steering = PVector.sub(desired, vel);
+    applyForce(steering);
+  }
+
+  public boolean isDead(PVector target, float ratio){
+    float difference = PVector.dist(objectPosition, target);
+    return difference < ratio;
+  }
+
+  public void display() {
+    noStroke();
+    fill(pointsColor);
+    ellipse(objectPosition.x, objectPosition.y, mass, mass);
+  }
+}
 class CollidingObject extends GameObject{
 	Body body;
 
@@ -422,8 +463,9 @@ class ParticleSystem extends GameObject{
 class Player extends Ship implements UserInput{
   float projectileMass;
   Vec2 projectileForce;
-  int score, recoveringElapsed, recoveryTime;
+  int score, recoveringElapsed, recoveryTime, blinkElapsed, blinkTime;
   boolean recovering = false;
+  boolean display = true;
 
   Player(float x, float y, float mass){
     super(x, y, mass);
@@ -432,6 +474,8 @@ class Player extends Ship implements UserInput{
     hp = 3;
     score = 0;
     recoveryTime = 120;
+    blinkElapsed = 0;
+    blinkTime = 15;
   }
 
   public void update(){
@@ -444,6 +488,8 @@ class Player extends Ship implements UserInput{
       super.decreaseHP();
       recovering = true;
       recoveringElapsed = 0;
+      display = false;
+      blinkElapsed = 0;
     }
   }
 
@@ -506,9 +552,14 @@ public void movementController() {
   stopMovement();
   shoot();
   elapsed++;
+  blinkElapsed ++;
   recoveringElapsed++;
   if (recoveringElapsed > recoveryTime){
     recovering = false;    
+  }  
+  if (recovering && blinkElapsed > blinkTime){
+    display = !display;
+    blinkElapsed = 0;
   }
 }
 
@@ -521,15 +572,13 @@ public void display(){
     ellipse(0, 0, mass, mass);
     popMatrix();
   }
-  if (inScreen() && recovering){
-    if (frameCount % 30 == 0){
-      Vec2 pos = box2d.getBodyPixelCoord(body);
-      pushMatrix();
-      translate(pos.x, pos.y);      
-      fill(0,255,0);
-      ellipse(0, 0, mass, mass);
-      popMatrix();
-    }
+  if (inScreen() && display){    
+    Vec2 pos = box2d.getBodyPixelCoord(body);
+    pushMatrix();
+    translate(pos.x, pos.y);      
+    fill(0,255,0);
+    ellipse(0, 0, mass, mass);
+    popMatrix();    
   }
   for(Projectile p : projectiles){
     p.display();

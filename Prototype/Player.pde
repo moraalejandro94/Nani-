@@ -1,8 +1,9 @@
 class Player extends Ship implements UserInput{
   float projectileMass;
   Vec2 projectileForce;
-  int score, recoveringElapsed, recoveryTime;
+  int score, recoveringElapsed, recoveryTime, blinkElapsed, blinkTime;
   boolean recovering = false;
+  boolean display = true;
 
   Player(float x, float y, float mass){
     super(x, y, mass);
@@ -11,6 +12,8 @@ class Player extends Ship implements UserInput{
     hp = 3;
     score = 0;
     recoveryTime = 120;
+    blinkElapsed = 0;
+    blinkTime = 15;
   }
 
   void update(){
@@ -23,6 +26,8 @@ class Player extends Ship implements UserInput{
       super.decreaseHP();
       recovering = true;
       recoveringElapsed = 0;
+      display = false;
+      blinkElapsed = 0;
     }
   }
 
@@ -60,16 +65,9 @@ class Player extends Ship implements UserInput{
 
  void shoot() {
    if (keys[shoot] && elapsed > shotSpeed) {
-     Vec2 pos = box2d.getBodyPixelCoord(body);
-     shoot(pos.x + mass + 2, pos.y, projectileMass, projectileForce);       
-     elapsed = 0;
+     shootProjectile();
    }
  }
-
- void shoot(float posX, float posY, float mass, Vec2 force){
-  Projectile p = new Projectile(posX, posY, mass, force);
-  projectiles.add(p);
-}
 
 void stopMovement(){
   if (!(keys[moveUp] || keys[moveDown] || keys[moveLeft] || keys[moveRight])){
@@ -85,9 +83,14 @@ void movementController() {
   stopMovement();
   shoot();
   elapsed++;
+  blinkElapsed ++;
   recoveringElapsed++;
   if (recoveringElapsed > recoveryTime){
     recovering = false;    
+  }  
+  if (recovering && blinkElapsed > blinkTime){
+    display = !display;
+    blinkElapsed = 0;
   }
 }
 
@@ -100,15 +103,13 @@ void display(){
     ellipse(0, 0, mass, mass);
     popMatrix();
   }
-  if (inScreen() && recovering){
-    if (frameCount % 30 == 0){
-      Vec2 pos = box2d.getBodyPixelCoord(body);
-      pushMatrix();
-      translate(pos.x, pos.y);      
-      fill(0,255,0);
-      ellipse(0, 0, mass, mass);
-      popMatrix();
-    }
+  if (inScreen() && display){    
+    Vec2 pos = box2d.getBodyPixelCoord(body);
+    pushMatrix();
+    translate(pos.x, pos.y);      
+    fill(0,255,0);
+    ellipse(0, 0, mass, mass);
+    popMatrix();    
   }
   for(Projectile p : projectiles){
     p.display();
