@@ -9,7 +9,6 @@ import org.jbox2d.collision.shapes.*;
 import org.jbox2d.common.*; 
 import org.jbox2d.dynamics.*; 
 import org.jbox2d.dynamics.contacts.*; 
-import java.util.Iterator; 
 
 import java.util.HashMap; 
 import java.util.ArrayList; 
@@ -21,8 +20,6 @@ import java.io.OutputStream;
 import java.io.IOException; 
 
 public class Prototype extends PApplet {
-
-
 
 
 
@@ -46,9 +43,9 @@ public void setup(){
 }
 
 public void playerInit(){	
-	player = new Player(width/2, height/2, 40, objects);
+	player = new Player(width/2, height/2, 40);
 	player.normalSpeed = 100;
-	seeker = new Seeker(100, 100, 40, 50, objects);
+	seeker = new Seeker(100, 100, 40, 50);
 	seeker.normalSpeed = 10;
 	objects.add(player);
 	objects.add(seeker);
@@ -66,13 +63,10 @@ public void draw(){
 	box2d.step();
 
 
-	Iterator it = objects.iterator();
-	while(it.hasNext()){
-		GameObject o = (GameObject)it.next();
+
+	for(GameObject o : objects){
+		o.update();
 		o.display();
-		if(o instanceof Projectile == false){
-			o.update();
-		}
 	}	
 	
     
@@ -199,8 +193,8 @@ class CollidingObject extends GameObject{
 }
 class Enemy extends Ship {
 
-	Enemy (float x, float y, float mass, ArrayList<GameObject> objects){
-		super(x,y,mass, objects);
+	Enemy (float x, float y, float mass){
+		super(x,y,mass);
 	}
 
 
@@ -236,13 +230,13 @@ PVector nullMove = new PVector(0,0);
 public PVector getDirectionVector(int direction){
   switch (direction) {
     case LEFT:
-      return left;
+    return left;
     case RIGHT:
-      return right;
+    return right;
     case UP:
-      return up;
+    return up;
     case DOWN:
-      return down;
+    return down;
   }
   return nullMove;
 }
@@ -250,13 +244,13 @@ public PVector getDirectionVector(int direction){
 public int getOppositeDirection(int direction){
   switch (direction) {
     case LEFT:
-      return RIGHT;
+    return RIGHT;
     case RIGHT:
-      return LEFT;
+    return LEFT;
     case UP:
-      return DOWN;
+    return DOWN;
     case DOWN:
-      return UP;
+    return UP;
   }
   return 0;
 }
@@ -264,76 +258,84 @@ class Player extends Ship implements UserInput{
   float projectileMass;
   Vec2 projectileForce;
 
-	Player(float x, float y, float mass, ArrayList<GameObject> objects){
-		super(x, y, mass, objects);
+  Player(float x, float y, float mass){
+    super(x, y, mass);
     projectileMass = 10;
-    projectileForce = new Vec2(1000,0);
-	}
-
-	public void update(){
-		movementController();
-		super.update();
-	}
-
-	public void move(int direction) {
-    //screenController(this.speed);
-    	speed.normalize();
-    	speed.add(getDirectionVector(direction));
-    	speed.setMag(normalSpeed);
-    	setSpeed(speed);
-  	}
-
-	public void moveUp() {
-    	if (keys[moveUp]) {
-			move(UP);
-    	}
-  	}
-
-  	public void moveLeft() {
-    	if (keys[moveLeft]) {
-			move(LEFT);
-    	}
-  	}
-
-  	public void moveRight() {
-    	if (keys[moveRight]) {
-			move(RIGHT);
-    	}
-  	}
-
-  	public void moveDown() {
-    	if (keys[moveDown]) {
-			move(DOWN);
-    	}
-  	}
-
-  	public void shoot() {
-    	if (keys[shoot] && frameCount%10 == 0) {
-       Vec2 pos = box2d.getBodyPixelCoord(body);
-	 		 shoot(pos.x + mass + 2, pos.y, projectileMass, projectileForce);       
-    	}
-  	}
-
-    public void shoot(float posX, float posY, float mass, Vec2 force){
-      Projectile p = new Projectile(posX, posY, mass, force);
-      objects.add(p);
-    }
-
-  	public void stopMovement(){
-  		if (!(keys[moveUp] || keys[moveDown] || keys[moveLeft] || keys[moveRight])){
-  			stop();
-  		}
-  	}
-
-  	public void movementController() {
-  		moveUp();
-  		moveLeft();
-  		moveDown();
-  		moveRight();
-  		stopMovement();
-  		shoot();
-    	elapsed++;
+    projectileForce = new Vec2(10000,0);
   }
+
+  public void update(){
+    movementController();
+    super.update();
+  }
+
+  public void move(int direction) {
+    //screenController(this.speed);
+    speed.normalize();
+    speed.add(getDirectionVector(direction));
+    speed.setMag(normalSpeed);
+    setSpeed(speed);
+  }
+
+  public void moveUp() {
+   if (keys[moveUp]) {
+     move(UP);
+   }
+ }
+
+ public void moveLeft() {
+   if (keys[moveLeft]) {
+     move(LEFT);
+   }
+ }
+
+ public void moveRight() {
+   if (keys[moveRight]) {
+     move(RIGHT);
+   }
+ }
+
+ public void moveDown() {
+   if (keys[moveDown]) {
+     move(DOWN);
+   }
+ }
+
+ public void shoot() {
+   if (keys[shoot] && frameCount%6 == 0) {
+     Vec2 pos = box2d.getBodyPixelCoord(body);
+     shoot(pos.x + mass + 2, pos.y, projectileMass, projectileForce);       
+   }
+ }
+
+ public void shoot(float posX, float posY, float mass, Vec2 force){
+  Projectile p = new Projectile(posX, posY, mass, force);
+  projectiles.add(p);
+}
+
+public void stopMovement(){
+  if (!(keys[moveUp] || keys[moveDown] || keys[moveLeft] || keys[moveRight])){
+   stop();
+ }
+}
+
+public void movementController() {
+  moveUp();
+  moveLeft();
+  moveDown();
+  moveRight();
+  stopMovement();
+  shoot();
+  elapsed++;
+}
+
+public void display(){
+  super.display();
+  for(Projectile p : projectiles){
+    p.display();
+  }
+
+}
 
 
 
@@ -367,31 +369,31 @@ class Projectile extends CollidingObject{
 class Seeker extends Enemy {
 	float rotationSpeed;
 
-	Seeker(float x, float y, float mass, float rotationSpeed, ArrayList<GameObject> objects){
-		super(x,y,mass, objects);
+	Seeker(float x, float y, float mass, float rotationSpeed){
+		super(x,y,mass);
 		this.rotationSpeed = rotationSpeed;
 	}
 
 	public void seek(Vec2 target) {
-	    Vec2 desired = target.sub(getPos());
-	    desired.normalize();
-	    desired.mulLocal(normalSpeed);	    
-	    Vec2 steering = desired.sub(new Vec2(speed.x, speed.y));
-	    steering = vec2Limit(steering,rotationSpeed);
-	    desired.mulLocal(normalSpeed);	    
-	    applyForce(steering);
-  	}
+		Vec2 desired = target.sub(getPos());
+		desired.normalize();
+		desired.mulLocal(normalSpeed);	    
+		Vec2 steering = desired.sub(new Vec2(speed.x, speed.y));
+		steering = vec2Limit(steering,rotationSpeed);
+		desired.mulLocal(normalSpeed);	    
+		applyForce(steering);
+	}
 
 	public void display() {
 		Vec2 pos = box2d.getBodyPixelCoord(body);
 		float a = vec2Heading(getPos());
-	    stroke(255);
-	    strokeWeight(2);
-	    fill(255,0,0);
-	    pushMatrix();
-	    translate(pos.x, pos.y);
-	    ellipse(0, 0, this.mass, this.mass);
-	    popMatrix();
+		stroke(255);
+		strokeWeight(2);
+		fill(255,0,0);
+		pushMatrix();
+		translate(pos.x, pos.y);
+		ellipse(0, 0, this.mass, this.mass);
+		popMatrix();
 	}
 
 	public void update(){
@@ -406,16 +408,16 @@ class Ship extends CollidingObject{
 	int hp, elapsed;
 	PVector speed;
 	float normalSpeed, boostSpeed;
-	ArrayList<GameObject> objects;
+	ArrayList<Projectile> projectiles;
 
-	Ship(float x, float y, float mass, ArrayList<GameObject> objects){
+	Ship(float x, float y, float mass){
 		super(x, y, mass);
 		hp = 1;
 		speed = new PVector(0, 0);
 		normalSpeed = 0;
 		boostSpeed = 0;
 		elapsed = 0;
-		this.objects = objects;
+		this.projectiles = new ArrayList();
 	}
 
 	public void update(){

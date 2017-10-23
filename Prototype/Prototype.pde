@@ -4,8 +4,6 @@ import org.jbox2d.collision.shapes.*;
 import org.jbox2d.common.*;
 import org.jbox2d.dynamics.*;
 import org.jbox2d.dynamics.contacts.*;
-import java.util.Iterator;
-
 
 Player player;
 Seeker seeker;
@@ -22,9 +20,9 @@ void setup(){
 }
 
 void playerInit(){	
-	player = new Player(width/2, height/2, 40, objects);
+	player = new Player(width/2, height/2, 40);
 	player.normalSpeed = 100;
-	seeker = new Seeker(100, 100, 40, 50, objects);
+	seeker = new Seeker(100, 100, 40, 50);
 	seeker.normalSpeed = 10;
 	objects.add(player);
 	objects.add(seeker);
@@ -42,11 +40,10 @@ void draw(){
 	box2d.step();
 
 
-	Iterator it = objects.iterator();
-	while(it.hasNext()){
-		GameObject o = (GameObject)it.next();
+
+	for(GameObject o : objects){
+		o.update();
 		o.display();
-		
 	}	
 	
     

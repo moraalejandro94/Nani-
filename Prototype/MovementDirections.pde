@@ -11,13 +11,13 @@ PVector nullMove = new PVector(0,0);
 PVector getDirectionVector(int direction){
   switch (direction) {
     case LEFT:
-      return left;
+    return left;
     case RIGHT:
-      return right;
+    return right;
     case UP:
-      return up;
+    return up;
     case DOWN:
-      return down;
+    return down;
   }
   return nullMove;
 }
@@ -25,13 +25,13 @@ PVector getDirectionVector(int direction){
 int getOppositeDirection(int direction){
   switch (direction) {
     case LEFT:
-      return RIGHT;
+    return RIGHT;
     case RIGHT:
-      return LEFT;
+    return LEFT;
     case UP:
-      return DOWN;
+    return DOWN;
     case DOWN:
-      return UP;
+    return UP;
   }
   return 0;
 }
