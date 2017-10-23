@@ -49,16 +49,6 @@ void displayGame(){
 	}	
 }
 
-void updateGame(){
-	if (frameCount % 60 == 0){
-		Seeker s = new Seeker(width - random(100, 300), random(100, height - 100), random(30, 60), random(60, 70));
-		s.seek(player.getPos());
-		s.normalSpeed = random(15, 25);
-		s.score = 10;
-		objects.add(s);
-	}		
-}
-
 void displayPause(){
 	for(GameObject o : objects){
 		o.display();
@@ -81,16 +71,11 @@ void displayStats(){
 	String score = String.valueOf(player.score);
 	fill(13, 108, 1);
 	text(score, width - textWidth(score), 60);
-	String hp = "HP : " + String.valueOf(player.hp);
-	fill(13, 108, 1);
-	text(hp, 0 + textWidth(hp), 60);
-
 }
 
 void draw(){
 	if (!pause) {
 		displayGame();
-		updateGame();
 	}else{
 		displayPause();
 	}
@@ -117,16 +102,14 @@ CollidingObject objectFromFixture(Fixture fixture){
 }
 
 void checkPlayer(CollidingObject object){
-	if (!player.recovering){
-		player.decreaseHP();
-		if(object instanceof Ship){
-			Ship s = (Ship)object;
-			objects.remove(s);			
-		} 
-		if(object instanceof Projectile){
-			Projectile p = (Projectile)object;
-			player.projectiles.remove(p);
-		}
+	player.decreaseHP();
+	if(object instanceof Ship){
+		Ship s = (Ship)object;
+		objects.remove(s);			
+	} 
+	if(object instanceof Projectile){
+		Projectile p = (Projectile)object;
+		player.projectiles.remove(p);
 	}
 }
 
