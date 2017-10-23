@@ -8,6 +8,8 @@ import org.jbox2d.dynamics.contacts.*;
 boolean pause = false;
 char pauseButton = 'p';
 
+color pointsColor;
+
 Player player;
 Seeker seeker;
 Box2DProcessing box2d;
@@ -15,23 +17,25 @@ boolean[] keys = new boolean[1024];
 ArrayList<GameObject> objects;
 
 void setup(){
+	frameRate(60);
 	fullScreen();
 	background(0);
-	frameRate(60);
 	objects = new ArrayList();
 	box2dInit();
 	playerInit();
+	colorsInit();
+}
+
+void colorsInit(){
+	pointsColor = color(13, 108, 1);
 }
 
 void playerInit(){	
 	player = new Player(width/2, height/2, 40);
 	player.normalSpeed = 100;
-	seeker = new Seeker(100, 100, 40, 50);
-	seeker.normalSpeed = 10;
-	seeker.score = 10;
 	objects.add(player);
-	objects.add(seeker);
 }
+
 
 void box2dInit() {
 	box2d = new Box2DProcessing(this);
@@ -48,6 +52,16 @@ void displayGame(){
 		o.update();
 		o.display();
 	}	
+}
+
+void updateGame(){
+	if (frameCount % 60 == 0){
+		Seeker s = new Seeker(width - random(100, 300), random(100, height - 100), random(30, 60), random(60, 70));
+		s.seek(player.getPos());
+		s.normalSpeed = random(15, 25);
+		s.score = 10;
+		objects.add(s);
+	}		
 }
 
 void displayPause(){
@@ -70,13 +84,17 @@ void displayStats(){
 	textSize(40);
 	textAlign(CENTER);
 	String score = String.valueOf(player.score);
-	fill(13, 108, 1);
+	fill(pointsColor);
 	text(score, width - textWidth(score), 60);
+	String hp = "HP : " + String.valueOf(player.hp);
+	fill(13, 108, 1);
+	text(hp, 0 + textWidth(hp), 60);
 }
 
 void draw(){
 	if (!pause) {
 		displayGame();
+		updateGame();
 	}else{
 		displayPause();
 	}
@@ -122,6 +140,9 @@ void checkEnemy(Enemy enemy, CollidingObject object){
 	}
 	if(enemy.dead){
 		objects.remove(enemy);
+		PVector pos = enemy.getPixelPos();
+		ParticleSystem particleSystem = new ParticleSystem(pos.x, pos.y,enemy.score);
+		objects.add(particleSystem);
 		player.score += enemy.score;
 	}
 }

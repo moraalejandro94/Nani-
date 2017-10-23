@@ -9,6 +9,8 @@ import org.jbox2d.collision.shapes.*;
 import org.jbox2d.common.*; 
 import org.jbox2d.dynamics.*; 
 import org.jbox2d.dynamics.contacts.*; 
+import java.util.Iterator; 
+import java.util.LinkedList; 
 
 import java.util.HashMap; 
 import java.util.ArrayList; 
@@ -31,6 +33,8 @@ public class Prototype extends PApplet {
 boolean pause = false;
 char pauseButton = 'p';
 
+int pointsColor;
+
 Player player;
 Seeker seeker;
 Box2DProcessing box2d;
@@ -38,23 +42,25 @@ boolean[] keys = new boolean[1024];
 ArrayList<GameObject> objects;
 
 public void setup(){
+	frameRate(60);
 	
 	background(0);
-	frameRate(60);
 	objects = new ArrayList();
 	box2dInit();
 	playerInit();
+	colorsInit();
+}
+
+public void colorsInit(){
+	pointsColor = color(13, 108, 1);
 }
 
 public void playerInit(){	
 	player = new Player(width/2, height/2, 40);
 	player.normalSpeed = 100;
-	seeker = new Seeker(100, 100, 40, 50);
-	seeker.normalSpeed = 10;
-	seeker.score = 10;
 	objects.add(player);
-	objects.add(seeker);
 }
+
 
 public void box2dInit() {
 	box2d = new Box2DProcessing(this);
@@ -103,12 +109,11 @@ public void displayStats(){
 	textSize(40);
 	textAlign(CENTER);
 	String score = String.valueOf(player.score);
-	fill(13, 108, 1);
+	fill(pointsColor);
 	text(score, width - textWidth(score), 60);
 	String hp = "HP : " + String.valueOf(player.hp);
 	fill(13, 108, 1);
 	text(hp, 0 + textWidth(hp), 60);
-
 }
 
 public void draw(){
@@ -141,16 +146,14 @@ public CollidingObject objectFromFixture(Fixture fixture){
 }
 
 public void checkPlayer(CollidingObject object){
-	if (!player.recovering){
-		player.decreaseHP();
-		if(object instanceof Ship){
-			Ship s = (Ship)object;
-			objects.remove(s);			
-		} 
-		if(object instanceof Projectile){
-			Projectile p = (Projectile)object;
-			player.projectiles.remove(p);
-		}
+	player.decreaseHP();
+	if(object instanceof Ship){
+		Ship s = (Ship)object;
+		objects.remove(s);			
+	} 
+	if(object instanceof Projectile){
+		Projectile p = (Projectile)object;
+		player.projectiles.remove(p);
 	}
 }
 
@@ -162,6 +165,9 @@ public void checkEnemy(Enemy enemy, CollidingObject object){
 	}
 	if(enemy.dead){
 		objects.remove(enemy);
+		PVector pos = enemy.getPixelPos();
+		ParticleSystem particleSystem = new ParticleSystem(pos.x, pos.y,enemy.score);
+		objects.add(particleSystem);
 		player.score += enemy.score;
 	}
 }
@@ -176,6 +182,7 @@ public void keyPressed(){
 public void keyReleased(){
 	keys[keyCode] = false;
 }
+
 class CollidingObject extends GameObject{
 	Body body;
 
@@ -241,7 +248,7 @@ class CollidingObject extends GameObject{
 
 	public PVector getPixelPos(){
 		Vec2 playerPos = box2d.getBodyPixelCoord(body);
-		PVector pos = box2d.coordWorldToPixelsPVector(playerPos);
+		PVector pos = new PVector(playerPos.x, playerPos.y);
 		return pos;
 	}
 
@@ -324,6 +331,93 @@ public int getOppositeDirection(int direction){
     return UP;
   }
   return 0;
+}
+class Particle extends GameObject{
+  PVector pos,speed,acc;
+  float mass, friction, lifeSpan, decay;
+
+  Particle(float x, float y, float mass){
+    super(x, y, mass);
+    this.speed = new PVector(0,0);
+    this.acc = new PVector(0,0);
+    this.mass = mass;
+    this.decay = 0.5f;
+    this.lifeSpan = 255;
+  }
+
+  public void display(){
+    noStroke();
+    fill(pointsColor,lifeSpan);
+    ellipse(objectPosition.x, objectPosition.y, mass, mass);
+  }
+
+  public void update(){
+    speed.add(acc);
+    objectPosition.add(speed);
+    acc.mult(0);
+    lifeSpan -= decay;
+  }
+
+  public void applyForce(PVector force){
+    PVector f = PVector.div(force,mass);
+    acc.add(f);
+  }
+
+  public boolean isDead(){
+    return lifeSpan <= 0;
+  }
+}
+
+
+
+class ParticleSystem extends GameObject{
+	PVector origin;
+	LinkedList<Particle> particles;
+	int maxParticles, current;
+
+	ParticleSystem(float x, float y, int maxParticles){
+		super(x, y, 0);
+		origin = new PVector(x, y);
+		particles = new LinkedList();
+		this.maxParticles = maxParticles;
+		current = 0;
+	}
+
+	public void update(){
+		if (current < maxParticles){
+			addParticle();
+			current++;
+		}
+		Iterator<Particle> i = particles.iterator();
+		while (i.hasNext()) {
+			Particle p = i.next();
+			p.update();
+			if (p.isDead()){
+				i.remove();
+			}
+		}
+	}
+
+	public void display(){
+		for (Particle p: particles){
+			p.display();
+		}
+	}
+
+	public void applyForce(PVector force){
+		for (Particle p: particles){
+			p.applyForce(force);
+		}	
+	}
+
+	public void addParticle(){
+		float mass = abs(randomGaussian())*2 + 5;
+		Particle p = new Particle(origin.x, origin.y, mass);
+		PVector dir = PVector.random2D();
+		dir.setMag(randomGaussian()*1 + 1);
+		p.applyForce(dir);
+		particles.add(p);
+	}
 }
 class Player extends Ship implements UserInput{
   float projectileMass;
