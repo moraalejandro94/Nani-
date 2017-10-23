@@ -17,15 +17,7 @@ class Seeker extends Enemy {
 	}
 
 	void display() {
-		Vec2 pos = box2d.getBodyPixelCoord(body);
-		float a = vec2Heading(getPos());
-		stroke(255);
-		strokeWeight(2);
-		fill(255,0,0);
-		pushMatrix();
-		translate(pos.x, pos.y);
-		ellipse(0, 0, this.mass, this.mass);
-		popMatrix();
+		super.display();
 	}
 
 	void update(){

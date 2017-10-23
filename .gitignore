@@ -3,3 +3,4 @@
 *.class
 Prototype/build-tmp/Prototype$CollidingObject.class
 Prototype/CollidingObject.pde
+*.class

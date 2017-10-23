@@ -1,12 +1,14 @@
 class Player extends Ship implements UserInput{
   float projectileMass;
   Vec2 projectileForce;
+  int score;
 
   Player(float x, float y, float mass){
     super(x, y, mass);
     projectileMass = 10;
     projectileForce = new Vec2(20000,0);
     hp = 3;
+    score = 0;
   }
 
   void update(){
@@ -47,9 +49,10 @@ class Player extends Ship implements UserInput{
  }
 
  void shoot() {
-   if (keys[shoot] && frameCount%6 == 0) {
+   if (keys[shoot] && elapsed > shotSpeed) {
      Vec2 pos = box2d.getBodyPixelCoord(body);
      shoot(pos.x + mass + 2, pos.y, projectileMass, projectileForce);       
+     elapsed = 0;
    }
  }
 

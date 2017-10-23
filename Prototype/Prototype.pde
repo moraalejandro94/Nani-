@@ -5,6 +5,9 @@ import org.jbox2d.common.*;
 import org.jbox2d.dynamics.*;
 import org.jbox2d.dynamics.contacts.*;
 
+boolean pause = false;
+char pauseButton = 'p';
+
 Player player;
 Seeker seeker;
 Box2DProcessing box2d;
@@ -23,7 +26,8 @@ void playerInit(){
 	player = new Player(width/2, height/2, 40);
 	player.normalSpeed = 100;
 	seeker = new Seeker(100, 100, 40, 50);
-	seeker.normalSpeed = 10;	
+	seeker.normalSpeed = 10;
+	seeker.score = 10;
 	objects.add(player);
 	objects.add(seeker);
 }
@@ -35,14 +39,47 @@ void box2dInit() {
 	box2d.listenForCollisions();
 }
 
-void draw(){
+
+void displayGame(){
 	background(0);
 	box2d.step();
-
 	for(GameObject o : objects){
 		o.update();
 		o.display();
 	}	
+}
+
+void displayPause(){
+	for(GameObject o : objects){
+		o.display();
+	}
+	noStroke();
+	fill(0, 200);
+	rect(0, 0, width, height);
+	fill(255);
+	textSize(60);
+	textAlign(CENTER);
+	text("PAUSED", width/2, height/2);
+}
+
+void displayStats(){
+	stroke(16, 87,  177, 60);
+	noFill();
+	arc(width/2, height/5, width + 200, height/4, -PI, 0);
+	textSize(40);
+	textAlign(CENTER);
+	String score = String.valueOf(player.score);
+	fill(13, 108, 1);
+	text(score, width - textWidth(score), 60);
+}
+
+void draw(){
+	if (!pause) {
+		displayGame();
+	}else{
+		displayPause();
+	}
+	displayStats();
 }
 
 
@@ -51,28 +88,9 @@ void beginContact(Contact c) {
 	CollidingObject o2 = objectFromFixture(c.getFixtureB());
 	if (o1 instanceof Player){
 		checkPlayer(o2);
+	}else if(o1 instanceof Enemy){
+		checkEnemy((Enemy) o1, o2);
 	}
-	if (o1 instanceof Ship && o2 instanceof Projectile){
-		Ship s = (Ship)o1;
-		s.decreaseHP();
-		if(s.dead){
-			objects.remove(s);
-		}
-		Projectile p = (Projectile)o2;
-		player.projectiles.remove(p);
-	}
-	if (o1 instanceof Player){		
-		player.decreaseHP();
-		if(o2 instanceof Ship){
-			Ship s = (Ship)o2;
-			objects.remove(s);			
-		} 
-		if(o2 instanceof Projectile){
-			Projectile p = (Projectile)o2;
-			player.projectiles.remove(p);
-		}
-	}
-
 }
 
 void endContact(Contact c) {}
@@ -83,12 +101,35 @@ CollidingObject objectFromFixture(Fixture fixture){
 	return (CollidingObject) object;
 }
 
-void checkPlayer(CollidingObject o2){
-	println("huy perro");
+void checkPlayer(CollidingObject object){
+	player.decreaseHP();
+	if(object instanceof Ship){
+		Ship s = (Ship)object;
+		objects.remove(s);			
+	} 
+	if(object instanceof Projectile){
+		Projectile p = (Projectile)object;
+		player.projectiles.remove(p);
+	}
+}
+
+void checkEnemy(Enemy enemy, CollidingObject object){
+	if (object instanceof Projectile){
+		enemy.decreaseHP();
+		Projectile projectiles = (Projectile)object;
+		player.projectiles.remove(projectiles);
+	}
+	if(enemy.dead){
+		objects.remove(enemy);
+		player.score += enemy.score;
+	}
 }
 
 void keyPressed(){
 	keys[keyCode] = true;
+	if (key == pauseButton){
+		pause = !pause;
+	}
 }
 
 void keyReleased(){

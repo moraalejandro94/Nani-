@@ -1,5 +1,5 @@
 class Ship extends CollidingObject{
-	int hp, elapsed;
+	int hp, elapsed, shotSpeed;
 	PVector speed;
 	float normalSpeed, boostSpeed;
 	boolean dead;
@@ -14,28 +14,28 @@ class Ship extends CollidingObject{
 		boostSpeed = 0;
 		elapsed = 0;
 		dead = false;
+		shotSpeed = 10;
 		this.projectiles = new ArrayList();
 	}
 
 	void update(){
 		super.update();
 		speed.mult(0);
+	}
+
+	void decreaseHP(){
+		this.hp--;
 		if (hp <= 0){
 			die();
 		}
 	}
 
-	void decreaseHP(){
-		this.hp--;
-	}
-
 	void die(){		
 		this.dead = true;
-		println("dead: "+dead);
 	}
 
 	void display(){
-		if (!dead && inScreen()){
+		if (inScreen()){
 			Vec2 pos = box2d.getBodyPixelCoord(body);
 			pushMatrix();
 			translate(pos.x, pos.y);
