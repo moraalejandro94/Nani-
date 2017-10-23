@@ -17,6 +17,7 @@ ArrayList<GameObject> objects;
 void setup(){
 	fullScreen();
 	background(0);
+	frameRate(60);
 	objects = new ArrayList();
 	box2dInit();
 	playerInit();
@@ -135,3 +136,4 @@ void keyPressed(){
 void keyReleased(){
 	keys[keyCode] = false;
 }
+

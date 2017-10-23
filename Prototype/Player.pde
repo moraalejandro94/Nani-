@@ -92,7 +92,7 @@ void movementController() {
 }
 
 void display(){
-  if (inScreen()){
+  if (inScreen() && !recovering){
     Vec2 pos = box2d.getBodyPixelCoord(body);
     pushMatrix();
     translate(pos.x, pos.y);      
@@ -101,12 +101,14 @@ void display(){
     popMatrix();
   }
   if (inScreen() && recovering){
-    Vec2 pos = box2d.getBodyPixelCoord(body);
-    pushMatrix();
-    translate(pos.x, pos.y);      
-    fill(0,0,255);
-    ellipse(0, 0, mass, mass);
-    popMatrix();
+    if (frameCount % 30 == 0){
+      Vec2 pos = box2d.getBodyPixelCoord(body);
+      pushMatrix();
+      translate(pos.x, pos.y);      
+      fill(0,255,0);
+      ellipse(0, 0, mass, mass);
+      popMatrix();
+    }
   }
   for(Projectile p : projectiles){
     p.display();

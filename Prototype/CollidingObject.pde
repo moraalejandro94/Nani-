@@ -63,7 +63,7 @@ class CollidingObject extends GameObject{
 
 	PVector getPixelPos(){
 		Vec2 playerPos = box2d.getBodyPixelCoord(body);
-		PVector pos = new PVector(playerPos.x, playerPos.y);
+		PVector pos = box2d.coordWorldToPixelsPVector(playerPos);
 		return pos;
 	}
 
