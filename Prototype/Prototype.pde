@@ -5,6 +5,9 @@ import org.jbox2d.common.*;
 import org.jbox2d.dynamics.*;
 import org.jbox2d.dynamics.contacts.*;
 
+boolean pause = false;
+char pauseButton = 'p';
+
 Player player;
 Seeker seeker;
 Box2DProcessing box2d;
@@ -35,14 +38,36 @@ void box2dInit() {
 	box2d.listenForCollisions();
 }
 
-void draw(){
+
+void displayGame(){
 	background(0);
 	box2d.step();
-
 	for(GameObject o : objects){
 		o.update();
 		o.display();
-	}	
+	}
+}
+
+void displayPause(){
+	for(GameObject o : objects){
+		o.display();
+	}
+	noStroke();
+	fill(0, 200);
+	rect(0, 0, width, height);
+	fill(255);
+	textSize(60);
+	textAlign(CENTER);
+	text("PAUSED", width/2, height/2);
+}
+
+
+void draw(){
+	if (!pause) {
+		displayGame();
+	}else{
+		displayPause();
+	}
 }
 
 
@@ -76,6 +101,9 @@ void checkPlayer(CollidingObject o2){
 
 void keyPressed(){
 	keys[keyCode] = true;
+	if (key == pauseButton){
+		pause = !pause;
+	}
 }
 
 void keyReleased(){

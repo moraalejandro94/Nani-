@@ -28,6 +28,9 @@ public class Prototype extends PApplet {
 
 
 
+boolean pause = false;
+char pauseButton = 'p';
+
 Player player;
 Seeker seeker;
 Box2DProcessing box2d;
@@ -58,14 +61,36 @@ public void box2dInit() {
 	box2d.listenForCollisions();
 }
 
-public void draw(){
+
+public void displayGame(){
 	background(0);
 	box2d.step();
-
 	for(GameObject o : objects){
 		o.update();
 		o.display();
-	}	
+	}
+}
+
+public void displayPause(){
+	for(GameObject o : objects){
+		o.display();
+	}
+	noStroke();
+	fill(0, 200);
+	rect(0, 0, width, height);
+	fill(255);
+	textSize(60);
+	textAlign(CENTER);
+	text("PAUSED", width/2, height/2);
+}
+
+
+public void draw(){
+	if (!pause) {
+		displayGame();
+	}else{
+		displayPause();
+	}
 }
 
 
@@ -99,6 +124,9 @@ public void checkPlayer(CollidingObject o2){
 
 public void keyPressed(){
 	keys[keyCode] = true;
+	if (key == pauseButton){
+		pause = !pause;
+	}
 }
 
 public void keyReleased(){
@@ -137,62 +165,62 @@ class CollidingObject extends GameObject{
 		if (pos.y < height + mass && pos.y > 0 - mass 
 			&& pos.x < width + mass && pos.x > 0 - mass ) {      
 			return true;
-		}
-		return false;
 	}
+	return false;
+}
 
-	public void display() {
-		if (inScreen()){
-			Vec2 pos = box2d.getBodyPixelCoord(body);
-			pushMatrix();
-			translate(pos.x, pos.y);
-			fill(255,0,0);
-			ellipse(0, 0, mass, mass);
-			popMatrix();
-		}
+public void display() {
+	if (inScreen()){
+		Vec2 pos = box2d.getBodyPixelCoord(body);
+		pushMatrix();
+		translate(pos.x, pos.y);
+		fill(255,0,0);
+		ellipse(0, 0, mass, mass);
+		popMatrix();
 	}
+}
 
-	public void applyForce(Vec2 force){
-		Vec2 pos = body.getWorldCenter();
-		body.applyForce(force, pos);
+public void applyForce(Vec2 force){
+	Vec2 pos = body.getWorldCenter();
+	body.applyForce(force, pos);
+}
+
+public void setSpeed(PVector pForce) {
+	Vec2 force = new Vec2(pForce.x, pForce.y);
+	body.setLinearVelocity(force);
+}
+
+public void stop(){
+	body.setLinearVelocity(new Vec2(0, 0));
+}
+
+public PVector getPixelPos(){
+	Vec2 playerPos = box2d.getBodyPixelCoord(body);
+	PVector pos = box2d.coordWorldToPixelsPVector(playerPos);
+	return pos;
+}
+
+public Vec2 getPos(){
+	Vec2 pos = body.getWorldCenter();
+	return pos;
+}
+
+public Vec2 vec2Limit(Vec2 vector, float max){
+	float mag = vector.length();
+	if (mag > max){
+		vector.normalize();
+		vector.mulLocal(max);
 	}
+	return vector;
+}
 
-	public void setSpeed(PVector pForce) {
-		Vec2 force = new Vec2(pForce.x, pForce.y);
-		body.setLinearVelocity(force);
-	}
+public float vec2Heading(Vec2 vector){
+	float angle = atan(vector.y/vector.x);
+	return angle;
 
-	public void stop(){
-		body.setLinearVelocity(new Vec2(0, 0));
-	}
+}
 
-	public PVector getPixelPos(){
-		Vec2 playerPos = box2d.getBodyPixelCoord(body);
-		PVector pos = box2d.coordWorldToPixelsPVector(playerPos);
-		return pos;
-	}
-
-	public Vec2 getPos(){
-		Vec2 pos = body.getWorldCenter();
-		return pos;
-	}
-
-	public Vec2 vec2Limit(Vec2 vector, float max){
-		float mag = vector.length();
-		if (mag > max){
-			vector.normalize();
-			vector.mulLocal(max);
-		}
-		return vector;
-	}
-
-	public float vec2Heading(Vec2 vector){
-		float angle = atan(vector.y/vector.x);
-		return angle;
-
-	}
-
-	public void update(){}
+public void update(){}
 }
 class Enemy extends Ship {
 
