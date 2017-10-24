@@ -1,7 +1,7 @@
 class Flock extends GameObject {
 	ArrayList<Particle> agents;
 	float alignDistance, separationDistance, cohesionDistance;
-	float alignRatio, separationRatio, cohesionRatio;
+	float alignRatio, separationRatio, cohesionRatio, maxForce;
 	PVector alignForce, separationForce, cohesionForce, origin;
 	int alignCount, separationCount, cohesionCount, maxParticles;
 	Player player;
@@ -14,7 +14,8 @@ class Flock extends GameObject {
 		cohesionDistance = 300;
 		separationRatio = 1;
 		alignRatio = 1;
-		cohesionRatio = 1;		
+		cohesionRatio = 1;
+		maxForce = 5;		
 		origin = new PVector(x, y);
 		this.maxParticles = maxParticles;
 		this.player = player;
@@ -33,10 +34,8 @@ class Flock extends GameObject {
 		agents.add(agent);
 	}
 
-	void display(){		
-
-
-	}
+	void display(){}
+	void kill(){}
 
 	void update(){
 		Iterator<Particle> i = agents.iterator();
@@ -46,7 +45,7 @@ class Flock extends GameObject {
 				//i.remove();
 			}
 			updateAgent(p);		
-			p.seek(player.getPixelPos());						
+			//p.seek(player.getPixelPos());						
 		}	
 	}
 
@@ -69,7 +68,7 @@ class Flock extends GameObject {
 
 
 	void calculateFlock(Particle origin, Particle target){
-		float distance = PVector.dist(origin.pos, target.pos);	
+		float distance = PVector.dist(origin.objectPosition, target.objectPosition);	
 		align(distance, target);
 		separate(distance, target, origin);
 		cohere(distance, target);
@@ -84,7 +83,7 @@ class Flock extends GameObject {
 
 	void separate(float distance, Particle target, Particle origin){
 		if (distance < separationDistance){
-			PVector difference = PVector.sub(origin.pos, target.pos);
+			PVector difference = PVector.sub(origin.objectPosition, target.objectPosition);
 			difference.normalize();
 			difference.div(distance);
 			separationForce.add(difference);
@@ -94,7 +93,7 @@ class Flock extends GameObject {
 
 	void cohere(float distance, Particle target){
 		if (distance < alignDistance){
-			cohesionForce.add(target.pos);
+			cohesionForce.add(target.objectPosition);
 			cohesionCount++;
 		}
 	}
@@ -103,7 +102,7 @@ class Flock extends GameObject {
 		if (alignCount > 0){
 			alignForce.div(alignCount);
 			alignForce.setMag(alignRatio);
-			alignForce.limit(agent.maxForce);
+			alignForce.limit(maxForce);
 			agent.applyForce(alignForce);
 			
 		}
@@ -113,7 +112,7 @@ class Flock extends GameObject {
 		if (separationCount > 0){
 			separationForce.div(separationCount);
 			separationForce.setMag(separationRatio);
-			separationForce.limit(agent.maxForce);
+			separationForce.limit(maxForce);
 			agent.applyForce(separationForce);					
 
 		}
@@ -122,9 +121,9 @@ class Flock extends GameObject {
 	void applyCohesion(Particle agent){
 		if (cohesionCount > 0){
 			cohesionForce.div(cohesionCount);
-			PVector force = cohesionForce.sub(agent.pos);
+			PVector force = cohesionForce.sub(agent.objectPosition);
 			force.setMag(cohesionRatio);
-			force.limit(agent.maxForce);
+			force.limit(maxForce);
 			agent.applyForce(force);
 			
 		}
