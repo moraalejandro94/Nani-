@@ -44,7 +44,7 @@ void gameInit(){
 	objects = new ArrayList();
 	garbage = new ArrayList();
 	player = new Player(width/2, height/2, 40);
-	player.normalSpeed = 100;
+	player.normalSpeed = 2500;
 	objects.add(player);
 }
 
@@ -63,8 +63,7 @@ void displayGame(){
 void updateGame(){
 	if (frameCount % 60 == 0){
 		Seeker s = new Seeker(width - random(100, 300), random(100, height - 100), random(30, 60), random(60, 70));
-		s.seek(player.getPos());
-		s.normalSpeed = random(15, 25);
+		s.normalSpeed = random(1500, 2500);
 		s.score = 10;
 		objects.add(s);
 	}
@@ -200,6 +199,13 @@ void garbageCollector(){
 		objects.remove(o);
 		o.kill();
 	}
+}
+
+// Agregamos la dirección opuesta a los elementos del mundo cuando el jugador se mueve
+void screenController(PVector speed){
+	PVector applySpeed = speed.copy();
+	applySpeed.mult(-1);
+
 }
 
 void endContact(Contact c) {}

@@ -6,14 +6,13 @@ class Seeker extends Enemy {
 		this.rotationSpeed = rotationSpeed;
 	}
 
-	void seek(Vec2 target) {
-		Vec2 desired = target.sub(getPos());
-		desired.normalize();
-		desired.mulLocal(normalSpeed);	    
-		Vec2 steering = desired.sub(new Vec2(speed.x, speed.y));
-		steering = vec2Limit(steering,rotationSpeed);
-		desired.mulLocal(normalSpeed);	    
-		applyForce(steering);
+	void seek(PVector target) {
+		PVector desired = PVector.sub(target, getPixelPos());
+		desired.setMag(normalSpeed);
+		PVector steering = PVector.sub(desired, speed);
+		steering.limit(normalSpeed);
+		steering.y *= -1;
+		setSpeed(steering);
 	}
 
 	void display() {
@@ -22,7 +21,7 @@ class Seeker extends Enemy {
 
 	void update(){
 		super.update();
-		seek(player.getPos());
+		seek(player.getPixelPos());
 	}
 
 

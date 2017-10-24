@@ -1,9 +1,11 @@
 class CollidingObject extends GameObject{
 	Body body;
 	int hp;
+	PVector speed;
 
 	CollidingObject(float x, float y, float mass) {
 		super(x,y, mass);
+		speed = new PVector(0, 0);
 		makeBody();
 	}
 	void makeBody() {
@@ -28,7 +30,7 @@ class CollidingObject extends GameObject{
 		if (body != null){
 			box2d.destroyBody(body);
 			body.setUserData(null);
-	            	body = null;
+			body = null;
 		}
 	}
 
@@ -59,7 +61,7 @@ void applyForce(Vec2 force){
 
 void setSpeed(PVector pForce) {
 	Vec2 force = new Vec2(pForce.x, pForce.y);
-	body.setLinearVelocity(force);
+	body.applyForce(force, body.getWorldCenter());
 }
 
 void stop(){
@@ -105,5 +107,7 @@ void die(){
 void kill(){
 	killBody();
 }
-void update(){}
+void update(){
+	stop();
+}
 }

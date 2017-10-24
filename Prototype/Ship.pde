@@ -1,6 +1,5 @@
 class Ship extends CollidingObject{
 	int elapsed, shotSpeed;
-	PVector speed;
 	float normalSpeed, boostSpeed;
 	ArrayList<Projectile> projectiles;
 	float projectileMass;
@@ -10,7 +9,6 @@ class Ship extends CollidingObject{
 	Ship(float x, float y, float mass){
 		super(x, y, mass);
 		hp = 1;
-		speed = new PVector(0, 0);
 		normalSpeed = 0;
 		boostSpeed = 0;
 		elapsed = 0;
@@ -22,7 +20,6 @@ class Ship extends CollidingObject{
 
 	void update(){
 		super.update();
-		speed.mult(0);
 	}
 
 	void display(){

@@ -69,7 +69,7 @@ public void gameInit(){
 	objects = new ArrayList();
 	garbage = new ArrayList();
 	player = new Player(width/2, height/2, 40);
-	player.normalSpeed = 100;
+	player.normalSpeed = 2500;
 	objects.add(player);
 }
 
@@ -88,8 +88,7 @@ public void displayGame(){
 public void updateGame(){
 	if (frameCount % 60 == 0){
 		Seeker s = new Seeker(width - random(100, 300), random(100, height - 100), random(30, 60), random(60, 70));
-		s.seek(player.getPos());
-		s.normalSpeed = random(15, 25);
+		s.normalSpeed = random(1500, 2500);
 		s.score = 10;
 		objects.add(s);
 	}
@@ -227,13 +226,22 @@ public void garbageCollector(){
 	}
 }
 
+// Agregamos la direcci\u00f3n opuesta a los elementos del mundo cuando el jugador se mueve
+public void screenController(PVector speed){
+	PVector applySpeed = speed.copy();
+	applySpeed.mult(-1);
+
+}
+
 public void endContact(Contact c) {}
 class CollidingObject extends GameObject{
 	Body body;
 	int hp;
+	PVector speed;
 
 	CollidingObject(float x, float y, float mass) {
 		super(x,y, mass);
+		speed = new PVector(0, 0);
 		makeBody();
 	}
 	public void makeBody() {
@@ -258,7 +266,7 @@ class CollidingObject extends GameObject{
 		if (body != null){
 			box2d.destroyBody(body);
 			body.setUserData(null);
-	            	body = null;
+			body = null;
 		}
 	}
 
@@ -289,7 +297,7 @@ public void applyForce(Vec2 force){
 
 public void setSpeed(PVector pForce) {
 	Vec2 force = new Vec2(pForce.x, pForce.y);
-	body.setLinearVelocity(force);
+	body.applyForce(force, body.getWorldCenter());
 }
 
 public void stop(){
@@ -335,7 +343,9 @@ public void die(){
 public void kill(){
 	killBody();
 }
-public void update(){}
+public void update(){
+	stop();
+}
 }
 class Enemy extends Ship {
 	int score, cost;	
@@ -356,6 +366,7 @@ abstract class GameObject{
 	 	dead = false;
 	 }
 
+	 public void applyForce(PVector speed){}
 	 public abstract void kill();
 	 public abstract void display();
 	 public abstract void update();
@@ -497,121 +508,114 @@ class ParticleSystem extends GameObject{
 	}
 }
 class Player extends Ship implements UserInput{
-  int score, recoveringElapsed, recoveryTime, blinkElapsed, blinkTime;
-  boolean recovering = false;
-  boolean display = true;
+	int score, recoveringElapsed, recoveryTime, blinkElapsed, blinkTime;
+	boolean recovering = false;
+	boolean display = true;
 
-  Player(float x, float y, float mass){
-    super(x, y, mass);
-    hp = 3;
-    score = 0;
-    recoveryTime = 120;
-    blinkElapsed = 0;
-    blinkTime = 15;
-  }
+	Player(float x, float y, float mass){
+		super(x, y, mass);
+		hp = 3;
+		score = 0;
+		recoveryTime = 120;
+		blinkElapsed = 0;
+		blinkTime = 15;
+	}
 
-  public void update(){
-    movementController();
-    super.update();    
-  }
+	public void update(){
+		movementController();
+		super.update();    
+	}
 
-  public void decreaseHP(){
-    if (!recovering){
-      super.decreaseHP();
-      recovering = true;
-      recoveringElapsed = 0;
-      display = false;
-      blinkElapsed = 0;
-    }
-  }
+	public void decreaseHP(){
+		if (!recovering){
+			super.decreaseHP();
+			recovering = true;
+			recoveringElapsed = 0;
+			display = false;
+			blinkElapsed = 0;
+		}
+	}
 
-  public void move(int direction) {
-    //screenController(this.speed);
-    speed.normalize();
-    speed.add(getDirectionVector(direction));
-    speed.setMag(normalSpeed);
-    setSpeed(speed);
-  }
+	public void move(int direction) {
+		speed.normalize();
+		speed.add(getDirectionVector(direction));
+		speed.setMag(normalSpeed);
+		if (direction == LEFT || direction == RIGHT){
+			screenController(speed);
+		}
+		setSpeed(speed);
+	}
 
-  public void moveUp() {
-   if (keys[moveUp]) {
-     move(UP);
-   }
- }
+	public void moveUp() {
+		if (keys[moveUp]) {
+			move(UP);
+		}
+	}
 
- public void moveLeft() {
-   if (keys[moveLeft]) {
-     move(LEFT);
-   }
- }
+	public void moveLeft() {
+		if (keys[moveLeft]) {
+			move(LEFT);
+		}
+	}
 
- public void moveRight() {
-   if (keys[moveRight]) {
-     move(RIGHT);
-   }
- }
+	public void moveRight() {
+		if (keys[moveRight]) {
+			move(RIGHT);
+		}
+	}
 
- public void moveDown() {
-   if (keys[moveDown]) {
-     move(DOWN);
-   }
- }
+	public void moveDown() {
+		if (keys[moveDown]) {
+			move(DOWN);
+		}
+	}
 
- public void shoot() {
-   if (keys[shoot]) {
-     shootProjectile();
-   }
- }
+	public void shoot() {
+		if (keys[shoot]) {
+			shootProjectile();
+		}
+	}
 
-public void stopMovement(){
-  if (!(keys[moveUp] || keys[moveDown] || keys[moveLeft] || keys[moveRight])){
-   stop();
- }
-}
+	public void movementController() {
+		moveUp();
+		moveLeft();
+		moveDown();
+		moveRight();
+		shoot();
+		elapsed++;
+		blinkElapsed ++;
+		recoveringElapsed++;
+		if (recoveringElapsed > recoveryTime){
+			recovering = false;    
+		}  
+		if (recovering && blinkElapsed > blinkTime){
+			display = !display;
+			blinkElapsed = 0;
+		}
+	}
 
-public void movementController() {
-  moveUp();
-  moveLeft();
-  moveDown();
-  moveRight();
-  stopMovement();
-  shoot();
-  elapsed++;
-  blinkElapsed ++;
-  recoveringElapsed++;
-  if (recoveringElapsed > recoveryTime){
-    recovering = false;    
-  }  
-  if (recovering && blinkElapsed > blinkTime){
-    display = !display;
-    blinkElapsed = 0;
-  }
-}
+	public void display(){
+		if (inScreen() && !recovering){
+			Vec2 pos = box2d.getBodyPixelCoord(body);
+			pushMatrix();
+			translate(pos.x, pos.y);      
+			fill(0,255,0);
+			ellipse(0, 0, mass, mass);
+			popMatrix();
+		}
+		if (inScreen() && display){    
+			Vec2 pos = box2d.getBodyPixelCoord(body);
+			pushMatrix();
+			translate(pos.x, pos.y);      
+			fill(0,255,0);
+			ellipse(0, 0, mass, mass);
+			popMatrix();    
+		}
+		for(Projectile p : projectiles){
+			p.display();
+		}
 
-public void display(){
-  if (inScreen() && !recovering){
-    Vec2 pos = box2d.getBodyPixelCoord(body);
-    pushMatrix();
-    translate(pos.x, pos.y);      
-    fill(0,255,0);
-    ellipse(0, 0, mass, mass);
-    popMatrix();
-  }
-  if (inScreen() && display){    
-    Vec2 pos = box2d.getBodyPixelCoord(body);
-    pushMatrix();
-    translate(pos.x, pos.y);      
-    fill(0,255,0);
-    ellipse(0, 0, mass, mass);
-    popMatrix();    
-  }
-  for(Projectile p : projectiles){
-    p.display();
-  }
-
-}
-
-
+	}
 
 }
 
@@ -651,14 +655,13 @@ class Seeker extends Enemy {
 		this.rotationSpeed = rotationSpeed;
 	}
 
-	public void seek(Vec2 target) {
-		Vec2 desired = target.sub(getPos());
-		desired.normalize();
-		desired.mulLocal(normalSpeed);	    
-		Vec2 steering = desired.sub(new Vec2(speed.x, speed.y));
-		steering = vec2Limit(steering,rotationSpeed);
-		desired.mulLocal(normalSpeed);	    
-		applyForce(steering);
+	public void seek(PVector target) {
+		PVector desired = PVector.sub(target, getPixelPos());
+		desired.setMag(normalSpeed);
+		PVector steering = PVector.sub(desired, speed);
+		steering.limit(normalSpeed);
+		steering.y *= -1;
+		setSpeed(steering);
 	}
 
 	public void display() {
@@ -667,7 +670,7 @@ class Seeker extends Enemy {
 
 	public void update(){
 		super.update();
-		seek(player.getPos());
+		seek(player.getPixelPos());
 	}
 
 
@@ -675,7 +678,6 @@ class Seeker extends Enemy {
 }
 class Ship extends CollidingObject{
 	int elapsed, shotSpeed;
-	PVector speed;
 	float normalSpeed, boostSpeed;
 	ArrayList<Projectile> projectiles;
 	float projectileMass;
@@ -685,7 +687,6 @@ class Ship extends CollidingObject{
 	Ship(float x, float y, float mass){
 		super(x, y, mass);
 		hp = 1;
-		speed = new PVector(0, 0);
 		normalSpeed = 0;
 		boostSpeed = 0;
 		elapsed = 0;
@@ -697,7 +698,6 @@ class Ship extends CollidingObject{
 
 	public void update(){
 		super.update();
-		speed.mult(0);
 	}
 
 	public void display(){
