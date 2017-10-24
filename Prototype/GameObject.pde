@@ -11,7 +11,7 @@ abstract class GameObject{
 	 	dead = false;
 	 }
 
-	 void applyForce(PVector speed){}
+	 void setSpeed(PVector speed){}
 	 abstract void kill();
 	 abstract void display();
 	 abstract void update();

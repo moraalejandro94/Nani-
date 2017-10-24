@@ -14,6 +14,7 @@ Player player;
 Seeker seeker;
 Box2DProcessing box2d;
 boolean[] keys = new boolean[1024];
+PVector worldDirection;
 ArrayList<GameObject> objects;
 ArrayList<GameObject> garbage;
 
@@ -43,6 +44,7 @@ void box2dInit() {
 void gameInit(){	
 	objects = new ArrayList();
 	garbage = new ArrayList();
+	worldDirection = new PVector(0, 0);
 	player = new Player(width/2, height/2, 40);
 	player.normalSpeed = 2500;
 	objects.add(player);
@@ -56,7 +58,7 @@ void displayGame(){
 	for(GameObject o : objects){
 		o.update();
 		o.display();
-	}	
+	}
 }
 
 // Actualiza los elementos del juego
@@ -201,11 +203,13 @@ void garbageCollector(){
 	}
 }
 
-// Agregamos la dirección opuesta a los elementos del mundo cuando el jugador se mueve
-void screenController(PVector speed){
-	PVector applySpeed = speed.copy();
-	applySpeed.mult(-1);
 
+// Agregamos la dirección opuesta a los elementos del mundo cuando el jugador se mueve
+void screenController(float speed){
+	worldDirection.x = speed * -1;
+	for(GameObject o : objects){
+		o.setSpeed(worldDirection);
+	}
 }
 
 void endContact(Contact c) {}

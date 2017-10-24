@@ -31,9 +31,7 @@ class Player extends Ship implements UserInput{
 		speed.normalize();
 		speed.add(getDirectionVector(direction));
 		speed.setMag(normalSpeed);
-		if (direction == LEFT || direction == RIGHT){
-			screenController(speed);
-		}
+		screenController(speed.x);
 		setSpeed(speed);
 	}
 
