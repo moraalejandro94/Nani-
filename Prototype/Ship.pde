@@ -4,6 +4,7 @@ class Ship extends CollidingObject{
 	ArrayList<Projectile> projectiles;
 	float projectileMass;
   	Vec2 projectileForce;
+  	boolean facingForward = true;
 
 
 	Ship(float x, float y, float mass){

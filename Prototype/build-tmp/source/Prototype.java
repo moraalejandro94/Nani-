@@ -692,67 +692,85 @@ class Player extends Ship implements UserInput{
 	public void moveLeft() {
 		if (keys[moveLeft]) {
 			move(LEFT);
-		}
-	}
+      facingForward = false;
+    }
+  }
 
-	public void moveRight() {
-		if (keys[moveRight]) {
-			move(RIGHT);
-		}
-	}
+  public void moveRight() {
+    if (keys[moveRight]) {
+     move(RIGHT);
+     facingForward = true;
+   }
+ }
 
-	public void moveDown() {
-		if (keys[moveDown]) {
-			move(DOWN);
-		}
-	}
+ public void moveDown() {
+  if (keys[moveDown]) {
+   move(DOWN);
+ }
+}
 
-	public void shoot() {
-		if (keys[shoot]) {
-			shootProjectile();
-		}
-	}
+public void shoot() {
+  if (keys[shoot]) {
+   shootProjectile();
+ }
+}
 
-	public void movementController() {
-		moveUp();
-		moveLeft();
-		moveDown();
-		moveRight();
-		shoot();
-		elapsed++;
-		blinkElapsed ++;
-		recoveringElapsed++;
-		if (recoveringElapsed > recoveryTime){
-			recovering = false;    
-		}  
-		if (recovering && blinkElapsed > blinkTime){
-			display = !display;
-			blinkElapsed = 0;
-		}
-	}
 
-	public void display(){
-		if (inScreen() && !recovering){
-			Vec2 pos = box2d.getBodyPixelCoord(body);
-			pushMatrix();
-			translate(pos.x, pos.y);      
-			fill(0,255,0);
-			ellipse(0, 0, mass, mass);
-			popMatrix();
-		}
-		if (inScreen() && display){    
-			Vec2 pos = box2d.getBodyPixelCoord(body);
-			pushMatrix();
-			translate(pos.x, pos.y);      
-			fill(0,255,0);
-			ellipse(0, 0, mass, mass);
-			popMatrix();    
-		}
-		for(Projectile p : projectiles){
-			p.display();
-		}
+public void shootProjectile(){
+  if(elapsed > shotSpeed){
+    Vec2 pos = box2d.getBodyPixelCoord(body);
+    elapsed = 0;
+    if (facingForward){
+      Projectile p = new Projectile(pos.x + mass, pos.y, projectileMass, projectileForce, this);
+      projectiles.add(p);
+    }
+    else{
+     Projectile p = new Projectile(pos.x - mass, pos.y, projectileMass, new Vec2(-projectileForce.x, projectileForce.y), this);
+     projectiles.add(p); 
+   }
+ }
+}
 
-	}
+public void movementController() {
+  moveUp();
+  moveLeft();
+  moveDown();
+  moveRight();
+  shoot();
+  elapsed++;
+  blinkElapsed ++;
+  recoveringElapsed++;
+  if (recoveringElapsed > recoveryTime){
+   recovering = false;    
+ }  
+ if (recovering && blinkElapsed > blinkTime){
+   display = !display;
+   blinkElapsed = 0;
+ }
+}
+
+public void display(){
+  if (inScreen() && !recovering){
+   Vec2 pos = box2d.getBodyPixelCoord(body);
+   pushMatrix();
+   translate(pos.x, pos.y);      
+   fill(0,255,0);
+   ellipse(0, 0, mass, mass);
+   popMatrix();
+ }
+ if (inScreen() && display){    
+   Vec2 pos = box2d.getBodyPixelCoord(body);
+   pushMatrix();
+   translate(pos.x, pos.y);      
+   fill(0,255,0);
+   ellipse(0, 0, mass, mass);
+   popMatrix();    
+ }
+ for(Projectile p : projectiles){
+   p.display();
+ }
+
+}
 
 }
 
@@ -819,6 +837,7 @@ class Ship extends CollidingObject{
 	ArrayList<Projectile> projectiles;
 	float projectileMass;
   	Vec2 projectileForce;
+  	boolean facingForward = true;
 
 
 	Ship(float x, float y, float mass){
