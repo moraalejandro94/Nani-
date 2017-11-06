@@ -3,6 +3,8 @@ interface UserInput{
 	char moveLeft = 'A';
 	char moveDown = 'S';
 	char moveRight = 'D';
+	char faceLeft = 'K';
+	char faceRight = 'L';
 	char shoot = ' ';
 
 	public void movementController();
@@ -10,5 +12,7 @@ interface UserInput{
 	public void moveLeft();
 	public void moveDown();
 	public void moveRight();
+	public void faceRight();
+	public void faceLeft();
 	public void shoot();
 }

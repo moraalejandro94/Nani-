@@ -14,7 +14,7 @@ class Player extends Ship implements UserInput{
 
 	void update(){
 		movementController();
-		super.update();    
+		super.update();
 	}
 
 	void decreaseHP(){
@@ -44,82 +44,97 @@ class Player extends Ship implements UserInput{
 	void moveLeft() {
 		if (keys[moveLeft]) {
 			move(LEFT);
-      facingForward = false;
-    }
-  }
+			angle += 0.005;
+		}
+	}
 
-  void moveRight() {
-    if (keys[moveRight]) {
-     move(RIGHT);
-     facingForward = true;
-   }
+	void moveRight() {
+		if (keys[moveRight]) {
+		 move(RIGHT);     
+		 angle -= 0.005;
+	 }
  }
+ void faceRight(){
+	if(keys[faceRight]){
+		facingForward = true;
+	}
+}
 
- void moveDown() {
-  if (keys[moveDown]) {
-   move(DOWN);
+
+void faceLeft(){
+	if(keys[faceLeft]){
+		facingForward = false;
+	}
+}
+
+
+void moveDown() {
+	if (keys[moveDown]) {
+	 move(DOWN);
  }
 }
 
 void shoot() {
-  if (keys[shoot]) {
-   shootProjectile();
+	if (keys[shoot]) {
+	 shootProjectile();
  }
 }
 
 
 void shootProjectile(){
-  if(elapsed > shotSpeed){
-    Vec2 pos = box2d.getBodyPixelCoord(body);
-    elapsed = 0;
-    if (facingForward){
-      Projectile p = new Projectile(pos.x + mass, pos.y, projectileMass, projectileForce, this);
-      projectiles.add(p);
-    }
-    else{
-     Projectile p = new Projectile(pos.x - mass, pos.y, projectileMass, new Vec2(-projectileForce.x, projectileForce.y), this);
-     projectiles.add(p); 
-   }
+	if(elapsed > shotSpeed){
+		Vec2 pos = box2d.getBodyPixelCoord(body);
+		elapsed = 0;
+		if (facingForward){
+			Projectile p = new Projectile(pos.x + mass, pos.y, projectileMass, projectileForce, this);
+			projectiles.add(p);
+		}
+		else{
+		 Projectile p = new Projectile(pos.x - mass, pos.y, projectileMass, new Vec2(-projectileForce.x, projectileForce.y), this);
+		 projectiles.add(p); 
+	 }
  }
 }
 
 void movementController() {
-  moveUp();
-  moveLeft();
-  moveDown();
-  moveRight();
-  shoot();
-  elapsed++;
-  blinkElapsed ++;
-  recoveringElapsed++;
-  if (recoveringElapsed > recoveryTime){
-   recovering = false;    
+	moveUp();
+	moveLeft();
+	moveDown();
+	moveRight();
+	faceLeft();
+	faceRight();
+	shoot();
+	elapsed++;
+	blinkElapsed ++;
+	recoveringElapsed++;
+	if (recoveringElapsed > recoveryTime){
+	 recovering = false;    
  }  
  if (recovering && blinkElapsed > blinkTime){
-   display = !display;
-   blinkElapsed = 0;
+	 display = !display;
+	 blinkElapsed = 0;
  }
 }
 
 void display(){
-  if (inScreen() && !recovering){
-   Vec2 pos = box2d.getBodyPixelCoord(body);
-   pushMatrix();
-   translate(pos.x, pos.y);      
-   fill(0,255,0);
-   ellipse(0, 0, mass, mass);
-   popMatrix();
+	if (inScreen() && !recovering){
+	 Vec2 pos = box2d.getBodyPixelCoord(body);
+	 pushMatrix();
+	 translate(pos.x, pos.y);      
+	 fill(0,255,0);
+	 ellipse(0, 0, mass, mass);
+	 popMatrix();
  }
  if (inScreen() && display){    
-   Vec2 pos = box2d.getBodyPixelCoord(body);
-   pushMatrix();
-   translate(pos.x, pos.y);      
-   fill(0,255,0);
-   ellipse(0, 0, mass, mass);
-   popMatrix();    
+	 Vec2 pos = box2d.getBodyPixelCoord(body);
+	 pushMatrix();
+	 translate(pos.x, pos.y);      
+	 fill(0,255,0);
+	 ellipse(0, 0, mass, mass);
+	 popMatrix();    
  }
  for(Projectile p : projectiles){
-   p.display();
+	 p.display();
  }
 
 }

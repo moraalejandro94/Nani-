@@ -33,23 +33,47 @@ public class Prototype extends PApplet {
 boolean pause = false;
 char pauseButton = 'p';
 
+PImage bg;
+float angle;
+
 int pointsColor;
 
 Player player;
-Seeker seeker;
+Flock flock;
 Box2DProcessing box2d;
 boolean[] keys = new boolean[1024];
+PVector worldDirection;
+
+ArrayList<PVector> points;
+PVector start;
+
+boolean boss;
+
 ArrayList<GameObject> objects;
 ArrayList<GameObject> garbage;
 
 public void setup(){
 	frameRate(60);
+	points = new ArrayList();
+	start = new PVector(width/2 + 500,150);
+	boss = false;
+	bg = loadImage("data/bg.png");
+	angle = 0;
+	fractal();
 	
 	background(0);
 	box2dInit();
 	gameInit();
 	colorsInit();
 }
+
+
+public void fractal(){
+	points.add(new PVector(width/2 + 200, 100));
+	points.add(new PVector(width/4 + 200, height - 100));
+	points.add(new PVector(3*width/4 + 200, height - 100));
+}
+
 
 // Inicializa todos los colores usados en el juego
 public void colorsInit(){
@@ -68,29 +92,57 @@ public void box2dInit() {
 public void gameInit(){	
 	objects = new ArrayList();
 	garbage = new ArrayList();
-	player = new Player(width/2, height/2, 40);
+	worldDirection = new PVector(0, 0);
+	player = (boss) ? new Player(200, height/2, 40) : new Player(width/2, height/2, 40);
 	player.normalSpeed = 2500;
+	flock = new Flock(player, 500);
 	objects.add(player);
+	objects.add(flock);
+
+}
+
+// Muestra y rota los elementos del fondo
+public void displayBackground(){
+	pushMatrix();
+	translate(width/2, height + width/1.2f);
+	imageMode(CENTER);
+	rotate(angle);
+	image(bg, 0, 0);
+	popMatrix();
+
 }
 
 // Muestra el juego y poine a correr el mundo
 public void displayGame(){
 	background(0);
+	displayBackground();
 	garbageCollector();
 	box2d.step();
 	for(GameObject o : objects){
 		o.update();
 		o.display();
-	}	
+	}
 }
 
 // Actualiza los elementos del juego
 public void updateGame(){
-	if (frameCount % 60 == 0){
-		Seeker s = new Seeker(width - random(100, 300), random(100, height - 100), random(30, 60), random(60, 70));
-		s.normalSpeed = random(1500, 2500);
-		s.score = 10;
+	if (boss){
+		int i = PApplet.parseInt(random(points.size()))	;
+		PVector dist = PVector.sub(points.get(i), start);
+		dist.div(2);
+		start.add(dist);
+
+		Seeker s = new Seeker(start.x, start.y, random(5, 10), random(60, 70));
+		s.normalSpeed = (frameCount%30 == 0) ? random(1500, 2500) : 0 ;
+		s.score = 1;
 		objects.add(s);
+	}else{
+		if (frameCount % 60 == 0){
+			Seeker s = new Seeker(width - random(10, 60), random(0, height), random(30 , 60), random(60, 70));
+			s.normalSpeed = random(1000, 1500);
+			s.score = 10;
+			flock.addEnemy(s);
+		}
 	}
 }
 
@@ -121,10 +173,20 @@ public void displayStats(){
 	String hp = "HP : " + String.valueOf(player.hp);
 	fill(13, 108, 1);
 	text(hp, 0 + textWidth(hp), 60);
+	if(boss){
+		fill(255, 0, 0);
+		rectMode(CENTER);
+		float w = 800 - player.score*2;
+		rect(width/2, 40, w, 10);
+		textSize(30);
+		fill(255);
+		text("Wac\u0142aw Sierpi\u0144ski", width/2, 30);
+	}
 }
 
 
 public void draw(){
+	println("obe: "+objects.size());
 	if (!pause) {
 		displayGame();
 		updateGame();
@@ -163,9 +225,9 @@ public void checkPlayer(CollidingObject object){
 
 // Se hace la acci\u00f3n de dispararle a un enemigo
 public void shootEnemy(Projectile p, Enemy e){
-		e.decreaseHP();
-		p.decreaseHP();
-		addToGarbage(p);
+	e.decreaseHP();
+	p.decreaseHP();
+	addToGarbage(p);
 }
 
 // Se revisa todas las posibles colisiones de un enemigo con otro objeto
@@ -227,10 +289,11 @@ public void garbageCollector(){
 }
 
 // Agregamos la direcci\u00f3n opuesta a los elementos del mundo cuando el jugador se mueve
-public void screenController(PVector speed){
-	PVector applySpeed = speed.copy();
-	applySpeed.mult(-1);
-
+public void screenController(float speed){
+	worldDirection.x = speed * -1;
+	for(GameObject o : objects){
+		o.setSpeed(worldDirection);
+	}
 }
 
 public void endContact(Contact c) {}
@@ -345,6 +408,7 @@ public void kill(){
 }
 public void update(){
 	stop();
+	speed.mult(0);
 }
 }
 class Enemy extends Ship {
@@ -354,65 +418,62 @@ class Enemy extends Ship {
 	}
 }
 class Flock extends GameObject {
-	ArrayList<Particle> agents;
+	ArrayList<Enemy> agents;
 	float alignDistance, separationDistance, cohesionDistance;
 	float alignRatio, separationRatio, cohesionRatio, maxForce;
-	PVector alignForce, separationForce, cohesionForce, origin;
-	int alignCount, separationCount, cohesionCount, maxParticles;
+	PVector alignForce, separationForce, cohesionForce;
+	int alignCount, separationCount, cohesionCount, maxEnemys;
 	Player player;
 
-	Flock(float x, float y, int maxParticles, ArrayList<GameObject> objects, Player player){		
-		super(x, y, 0);
+	Flock(Player player, float maxForce){		
+		super(0, 0, 0);
 		agents = new ArrayList();
-		separationDistance = 5;
+		separationDistance = 70;
 		alignDistance = 70;
-		cohesionDistance = 300;
-		separationRatio = 1;
-		alignRatio = 1;
-		cohesionRatio = 1;
-		maxForce = 5;		
-		origin = new PVector(x, y);
-		this.maxParticles = maxParticles;
+		cohesionDistance = 50;
+		separationRatio = 100;
+		alignRatio = 150;
+		cohesionRatio = 150;
+		this.maxForce = maxForce;
 		this.player = player;
-		fillParticles(x , y , 1, objects);		
 	}
 
-	public void fillParticles(float x, float y, float mass, ArrayList<GameObject> objects){
-		for (int i = 0; i <= maxParticles ; i++){
-			Particle p = new Particle(x + random(-20, 20), y + random(-20, 20), mass);		
-			this.agents.add(p);	
-			objects.add(p);
-		}
-	}
-
-	public void addParticle(Particle agent){
+	public void addEnemy(Enemy agent){
 		agents.add(agent);
+	}
+
+	public void setSpeed(PVector speed){
+		for(Enemy o : agents){
+			o.setSpeed(speed);
+		}
 	}
 
 	public void display(){}
 	public void kill(){}
 
 	public void update(){
-		Iterator<Particle> i = agents.iterator();
+		Iterator<Enemy> i = agents.iterator();
 		while (i.hasNext()) {
-			Particle p = i.next();			
-			if (p.isDead()){
-				//i.remove();
+			Enemy p = i.next();			
+			if (p.dead){
+				i.remove();
+				p.kill();
+			}else{
+				updateAgent(p);
+				p.update();
+				p.display();
 			}
-			updateAgent(p);		
-			//p.seek(player.getPixelPos());						
 		}	
 	}
 
-
-	public void updateAgent(Particle agent){
+	public void updateAgent(Enemy agent){
 		alignCount = 0;
 		separationCount = 0;
 		cohesionCount = 0;
 		alignForce = new PVector(0, 0);
 		separationForce  = new PVector(0, 0);
 		cohesionForce  = new PVector(0, 0);
-		for (Particle a : agents) {
+		for (Enemy a : agents) {
 			if (agent != a){
 				calculateFlock(agent, a);
 			}
@@ -422,21 +483,21 @@ class Flock extends GameObject {
 
 
 
-	public void calculateFlock(Particle origin, Particle target){
+	public void calculateFlock(Enemy origin, Enemy target){
 		float distance = PVector.dist(origin.objectPosition, target.objectPosition);	
 		align(distance, target);
 		separate(distance, target, origin);
 		cohere(distance, target);
 	}
 
-	public void align(float distance, Particle target){
+	public void align(float distance, Enemy target){
 		if (distance < alignDistance){
 			alignForce.add(target.speed);
 			alignCount++;
 		}
 	}
 
-	public void separate(float distance, Particle target, Particle origin){
+	public void separate(float distance, Enemy target, Enemy origin){
 		if (distance < separationDistance){
 			PVector difference = PVector.sub(origin.objectPosition, target.objectPosition);
 			difference.normalize();
@@ -446,45 +507,45 @@ class Flock extends GameObject {
 		}
 	}
 
-	public void cohere(float distance, Particle target){
+	public void cohere(float distance, Enemy target){
 		if (distance < alignDistance){
 			cohesionForce.add(target.objectPosition);
 			cohesionCount++;
 		}
 	}
 
-	public void applyAlign(Particle agent){
+	public void applyAlign(Enemy agent){
 		if (alignCount > 0){
 			alignForce.div(alignCount);
 			alignForce.setMag(alignRatio);
 			alignForce.limit(maxForce);
-			agent.applyForce(alignForce);
+			agent.setSpeed(alignForce);
 			
 		}
 	}
 
-	public void applySeparation(Particle agent){
+	public void applySeparation(Enemy agent){
 		if (separationCount > 0){
 			separationForce.div(separationCount);
 			separationForce.setMag(separationRatio);
 			separationForce.limit(maxForce);
-			agent.applyForce(separationForce);					
+			agent.setSpeed(separationForce);					
 
 		}
 	}
 
-	public void applyCohesion(Particle agent){
+	public void applyCohesion(Enemy agent){
 		if (cohesionCount > 0){
 			cohesionForce.div(cohesionCount);
 			PVector force = cohesionForce.sub(agent.objectPosition);
 			force.setMag(cohesionRatio);
 			force.limit(maxForce);
-			agent.applyForce(force);
+			agent.setSpeed(force);
 			
 		}
 	}
 
-	public void applyFlock(Particle agent){
+	public void applyFlock(Enemy agent){
 		applyAlign(agent);
 		applySeparation(agent);
 		applyCohesion(agent);		
@@ -503,7 +564,7 @@ abstract class GameObject{
 	 	dead = false;
 	 }
 
-	 public void applyForce(PVector speed){}
+	 public void setSpeed(PVector speed){}
 	 public abstract void kill();
 	 public abstract void display();
 	 public abstract void update();
@@ -549,12 +610,14 @@ public int getOppositeDirection(int direction){
 class Particle extends GameObject{
   PVector speed,acc;
   float mass, friction, lifeSpan, decay;
+  float maxSpeed;
 
   Particle(float x, float y, float mass){
     super(x, y, mass);
     this.speed = new PVector(0,0);
     this.acc = new PVector(0,0);
     this.mass = mass;
+    this.maxSpeed = random(1, 10);
     this.decay = 0.5f;
     this.lifeSpan = 255;
   }
@@ -570,7 +633,15 @@ class Particle extends GameObject{
     objectPosition.add(speed);
     acc.mult(0);
     lifeSpan -= decay;
+    seekPlayer();
   }
+
+public void seekPlayer(){
+  PVector randy = PVector.random2D();
+  randy.setMag(random(player.mass));
+  PVector pos = player.getPixelPos().add(randy);
+  seek(pos);
+}
 
   public void applyForce(PVector force){
     PVector f = PVector.div(force,mass);
@@ -583,7 +654,15 @@ class Particle extends GameObject{
 
   public boolean near(CollidingObject target){
     float distance = PVector.dist(objectPosition, target.getPixelPos());
-    return distance <= target.mass;
+    return distance < target.mass / 2;
+  }
+
+  public void seek(PVector target) {
+    PVector desired = PVector.sub(target, objectPosition);
+    desired.setMag(maxSpeed);
+    PVector steering = PVector.sub(desired, speed);
+    steering.limit(maxSpeed);
+    applyForce(steering);
   }
 
   public void kill(){}
@@ -632,7 +711,7 @@ class ParticleSystem extends GameObject{
 	}
 
 	public void addParticle(){
-		float mass = abs(randomGaussian())*2 + 5;
+		float mass = abs(randomGaussian())*3 + 5;
 		Particle p = new Particle(origin.x, origin.y, mass);
 		PVector dir = PVector.random2D();
 		dir.setMag(randomGaussian()*1 + 1);
@@ -660,7 +739,7 @@ class Player extends Ship implements UserInput{
 
 	public void update(){
 		movementController();
-		super.update();    
+		super.update();
 	}
 
 	public void decreaseHP(){
@@ -677,9 +756,7 @@ class Player extends Ship implements UserInput{
 		speed.normalize();
 		speed.add(getDirectionVector(direction));
 		speed.setMag(normalSpeed);
-		if (direction == LEFT || direction == RIGHT){
-			screenController(speed);
-		}
+		screenController(speed.x);
 		setSpeed(speed);
 	}
 
@@ -692,82 +769,97 @@ class Player extends Ship implements UserInput{
 	public void moveLeft() {
 		if (keys[moveLeft]) {
 			move(LEFT);
-      facingForward = false;
-    }
-  }
+			angle += 0.005f;
+		}
+	}
 
-  public void moveRight() {
-    if (keys[moveRight]) {
-     move(RIGHT);
-     facingForward = true;
-   }
+	public void moveRight() {
+		if (keys[moveRight]) {
+		 move(RIGHT);     
+		 angle -= 0.005f;
+	 }
  }
+ public void faceRight(){
+	if(keys[faceRight]){
+		facingForward = true;
+	}
+}
 
- public void moveDown() {
-  if (keys[moveDown]) {
-   move(DOWN);
+
+public void faceLeft(){
+	if(keys[faceLeft]){
+		facingForward = false;
+	}
+}
+
+
+public void moveDown() {
+	if (keys[moveDown]) {
+	 move(DOWN);
  }
 }
 
 public void shoot() {
-  if (keys[shoot]) {
-   shootProjectile();
+	if (keys[shoot]) {
+	 shootProjectile();
  }
 }
 
 
 public void shootProjectile(){
-  if(elapsed > shotSpeed){
-    Vec2 pos = box2d.getBodyPixelCoord(body);
-    elapsed = 0;
-    if (facingForward){
-      Projectile p = new Projectile(pos.x + mass, pos.y, projectileMass, projectileForce, this);
-      projectiles.add(p);
-    }
-    else{
-     Projectile p = new Projectile(pos.x - mass, pos.y, projectileMass, new Vec2(-projectileForce.x, projectileForce.y), this);
-     projectiles.add(p); 
-   }
+	if(elapsed > shotSpeed){
+		Vec2 pos = box2d.getBodyPixelCoord(body);
+		elapsed = 0;
+		if (facingForward){
+			Projectile p = new Projectile(pos.x + mass, pos.y, projectileMass, projectileForce, this);
+			projectiles.add(p);
+		}
+		else{
+		 Projectile p = new Projectile(pos.x - mass, pos.y, projectileMass, new Vec2(-projectileForce.x, projectileForce.y), this);
+		 projectiles.add(p); 
+	 }
  }
 }
 
 public void movementController() {
-  moveUp();
-  moveLeft();
-  moveDown();
-  moveRight();
-  shoot();
-  elapsed++;
-  blinkElapsed ++;
-  recoveringElapsed++;
-  if (recoveringElapsed > recoveryTime){
-   recovering = false;    
+	moveUp();
+	moveLeft();
+	moveDown();
+	moveRight();
+	faceLeft();
+	faceRight();
+	shoot();
+	elapsed++;
+	blinkElapsed ++;
+	recoveringElapsed++;
+	if (recoveringElapsed > recoveryTime){
+	 recovering = false;    
  }  
  if (recovering && blinkElapsed > blinkTime){
-   display = !display;
-   blinkElapsed = 0;
+	 display = !display;
+	 blinkElapsed = 0;
  }
 }
 
 public void display(){
-  if (inScreen() && !recovering){
-   Vec2 pos = box2d.getBodyPixelCoord(body);
-   pushMatrix();
-   translate(pos.x, pos.y);      
-   fill(0,255,0);
-   ellipse(0, 0, mass, mass);
-   popMatrix();
+	if (inScreen() && !recovering){
+	 Vec2 pos = box2d.getBodyPixelCoord(body);
+	 pushMatrix();
+	 translate(pos.x, pos.y);      
+	 fill(0,255,0);
+	 ellipse(0, 0, mass, mass);
+	 popMatrix();
  }
  if (inScreen() && display){    
-   Vec2 pos = box2d.getBodyPixelCoord(body);
-   pushMatrix();
-   translate(pos.x, pos.y);      
-   fill(0,255,0);
-   ellipse(0, 0, mass, mass);
-   popMatrix();    
+	 Vec2 pos = box2d.getBodyPixelCoord(body);
+	 pushMatrix();
+	 translate(pos.x, pos.y);      
+	 fill(0,255,0);
+	 ellipse(0, 0, mass, mass);
+	 popMatrix();    
  }
  for(Projectile p : projectiles){
-   p.display();
+	 p.display();
  }
 
 }
@@ -882,6 +974,8 @@ interface UserInput{
 	char moveLeft = 'A';
 	char moveDown = 'S';
 	char moveRight = 'D';
+	char faceLeft = 'K';
+	char faceRight = 'L';
 	char shoot = ' ';
 
 	public void movementController();
@@ -889,9 +983,11 @@ interface UserInput{
 	public void moveLeft();
 	public void moveDown();
 	public void moveRight();
+	public void faceRight();
+	public void faceLeft();
 	public void shoot();
 }
-  public void settings() { 	fullScreen(); }
+  public void settings() { 	fullScreen(P2D); }
   static public void main(String[] passedArgs) {
     String[] appletArgs = new String[] { "Prototype" };
     if (passedArgs != null) {

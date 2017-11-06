@@ -109,5 +109,6 @@ void kill(){
 }
 void update(){
 	stop();
+	speed.mult(0);
 }
 }

@@ -42,7 +42,7 @@ class ParticleSystem extends GameObject{
 	}
 
 	void addParticle(){
-		float mass = abs(randomGaussian())*2 + 5;
+		float mass = abs(randomGaussian())*3 + 5;
 		Particle p = new Particle(origin.x, origin.y, mass);
 		PVector dir = PVector.random2D();
 		dir.setMag(randomGaussian()*1 + 1);

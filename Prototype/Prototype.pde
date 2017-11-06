@@ -8,24 +8,47 @@ import org.jbox2d.dynamics.contacts.*;
 boolean pause = false;
 char pauseButton = 'p';
 
+PImage bg;
+float angle;
+
 color pointsColor;
 
 Player player;
-Seeker seeker;
+Flock flock;
 Box2DProcessing box2d;
 boolean[] keys = new boolean[1024];
 PVector worldDirection;
+
+ArrayList<PVector> points;
+PVector start;
+
+boolean boss;
+
 ArrayList<GameObject> objects;
 ArrayList<GameObject> garbage;
 
 void setup(){
 	frameRate(60);
-	fullScreen();
+	points = new ArrayList();
+	start = new PVector(width/2 + 500,150);
+	boss = false;
+	bg = loadImage("data/bg.png");
+	angle = 0;
+	fractal();
+	fullScreen(P2D);
 	background(0);
 	box2dInit();
 	gameInit();
 	colorsInit();
 }
+
+
+void fractal(){
+	points.add(new PVector(width/2 + 200, 100));
+	points.add(new PVector(width/4 + 200, height - 100));
+	points.add(new PVector(3*width/4 + 200, height - 100));
+}
+
 
 // Inicializa todos los colores usados en el juego
 void colorsInit(){
@@ -45,14 +68,29 @@ void gameInit(){
 	objects = new ArrayList();
 	garbage = new ArrayList();
 	worldDirection = new PVector(0, 0);
-	player = new Player(width/2, height/2, 40);
+	player = (boss) ? new Player(200, height/2, 40) : new Player(width/2, height/2, 40);
 	player.normalSpeed = 2500;
+	flock = new Flock(player, 500);
 	objects.add(player);
+	objects.add(flock);
+
+}
+
+// Muestra y rota los elementos del fondo
+void displayBackground(){
+	pushMatrix();
+	translate(width/2, height + width/1.2);
+	imageMode(CENTER);
+	rotate(angle);
+	image(bg, 0, 0);
+	popMatrix();
+
 }
 
 // Muestra el juego y poine a correr el mundo
 void displayGame(){
 	background(0);
+	displayBackground();
 	garbageCollector();
 	box2d.step();
 	for(GameObject o : objects){
@@ -63,11 +101,23 @@ void displayGame(){
 
 // Actualiza los elementos del juego
 void updateGame(){
-	if (frameCount % 60 == 0){
-		Seeker s = new Seeker(width - random(100, 300), random(100, height - 100), random(30, 60), random(60, 70));
-		s.normalSpeed = random(1500, 2500);
-		s.score = 10;
+	if (boss){
+		int i = int(random(points.size()))	;
+		PVector dist = PVector.sub(points.get(i), start);
+		dist.div(2);
+		start.add(dist);
+
+		Seeker s = new Seeker(start.x, start.y, random(5, 10), random(60, 70));
+		s.normalSpeed = (frameCount%30 == 0) ? random(1500, 2500) : 0 ;
+		s.score = 1;
 		objects.add(s);
+	}else{
+		if (frameCount % 60 == 0){
+			Seeker s = new Seeker(width - random(10, 60), random(0, height), random(30 , 60), random(60, 70));
+			s.normalSpeed = random(1000, 1500);
+			s.score = 10;
+			flock.addEnemy(s);
+		}
 	}
 }
 
@@ -98,10 +148,20 @@ void displayStats(){
 	String hp = "HP : " + String.valueOf(player.hp);
 	fill(13, 108, 1);
 	text(hp, 0 + textWidth(hp), 60);
+	if(boss){
+		fill(255, 0, 0);
+		rectMode(CENTER);
+		float w = 800 - player.score*2;
+		rect(width/2, 40, w, 10);
+		textSize(30);
+		fill(255);
+		text("Wacław Sierpiński", width/2, 30);
+	}
 }
 
 
 void draw(){
+	println("obe: "+objects.size());
 	if (!pause) {
 		displayGame();
 		updateGame();
@@ -140,9 +200,9 @@ void checkPlayer(CollidingObject object){
 
 // Se hace la acción de dispararle a un enemigo
 void shootEnemy(Projectile p, Enemy e){
-		e.decreaseHP();
-		p.decreaseHP();
-		addToGarbage(p);
+	e.decreaseHP();
+	p.decreaseHP();
+	addToGarbage(p);
 }
 
 // Se revisa todas las posibles colisiones de un enemigo con otro objeto
@@ -202,7 +262,6 @@ void garbageCollector(){
 		o.kill();
 	}
 }
-
 
 // Agregamos la dirección opuesta a los elementos del mundo cuando el jugador se mueve
 void screenController(float speed){
