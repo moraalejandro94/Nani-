@@ -104,7 +104,7 @@ public void gameInit(){
 // Muestra y rota los elementos del fondo
 public void displayBackground(){
 	pushMatrix();
-	translate(width/2, height + width/1.2f);
+	translate(width/2, height + width/2.5f);
 	imageMode(CENTER);
 	rotate(angle);
 	image(bg, 0, 0);
@@ -116,7 +116,7 @@ public void displayBackground(){
 public void displayGame(){
 	background(0);
 	displayBackground();
-	garbageCollector();
+	garbageCollector();	
 	box2d.step();
 	for(GameObject o : objects){
 		o.update();
@@ -138,10 +138,13 @@ public void updateGame(){
 		objects.add(s);
 	}else{
 		if (frameCount % 60 == 0){
-			Seeker s = new Seeker(width - random(10, 60), random(0, height), random(30 , 60), random(60, 70));
+			Seeker s = new Seeker(width - 30, random(0, height), random(30 , 60), random(60, 70));
 			s.normalSpeed = random(1000, 1500);
 			s.score = 10;
 			flock.addEnemy(s);
+		}
+		for (Projectile p  : player.projectiles){
+			p.update();
 		}
 	}
 }
@@ -186,7 +189,7 @@ public void displayStats(){
 
 
 public void draw(){
-	println("obe: "+objects.size());
+	//println("obe: "+objects.size());
 	if (!pause) {
 		displayGame();
 		updateGame();
@@ -281,7 +284,7 @@ public void garbageCollector(){
 	for(GameObject o: garbage){
 		if (o instanceof Projectile){
 			Projectile p = (Projectile)o;
-			p.owner.projectiles.remove(p);
+			p.owner.projectiles.remove(p);			
 		}
 		objects.remove(o);
 		o.kill();
@@ -812,11 +815,11 @@ public void shootProjectile(){
 		elapsed = 0;
 		if (facingForward){
 			Projectile p = new Projectile(pos.x + mass, pos.y, projectileMass, projectileForce, this);
-			projectiles.add(p);
+			projectiles.add(p);		
 		}
 		else{
 		 Projectile p = new Projectile(pos.x - mass, pos.y, projectileMass, new Vec2(-projectileForce.x, projectileForce.y), this);
-		 projectiles.add(p); 
+		 projectiles.add(p); 		 
 	 }
  }
 }
@@ -888,8 +891,12 @@ class Projectile extends CollidingObject{
 	}
 
 
-	public void update(){
-		super.update();
+	public void update(){		
+		if (!inScreen()){			
+			dead = true; 		
+			addToGarbage(this);			
+		}
+		
 	}
 
 

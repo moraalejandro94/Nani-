@@ -79,7 +79,7 @@ void gameInit(){
 // Muestra y rota los elementos del fondo
 void displayBackground(){
 	pushMatrix();
-	translate(width/2, height + width/1.2);
+	translate(width/2, height + width/2.5);
 	imageMode(CENTER);
 	rotate(angle);
 	image(bg, 0, 0);
@@ -91,7 +91,7 @@ void displayBackground(){
 void displayGame(){
 	background(0);
 	displayBackground();
-	garbageCollector();
+	garbageCollector();	
 	box2d.step();
 	for(GameObject o : objects){
 		o.update();
@@ -113,10 +113,13 @@ void updateGame(){
 		objects.add(s);
 	}else{
 		if (frameCount % 60 == 0){
-			Seeker s = new Seeker(width - random(10, 60), random(0, height), random(30 , 60), random(60, 70));
+			Seeker s = new Seeker(width - 30, random(0, height), random(30 , 60), random(60, 70));
 			s.normalSpeed = random(1000, 1500);
 			s.score = 10;
 			flock.addEnemy(s);
+		}
+		for (Projectile p  : player.projectiles){
+			p.update();
 		}
 	}
 }
@@ -161,7 +164,7 @@ void displayStats(){
 
 
 void draw(){
-	println("obe: "+objects.size());
+	//println("obe: "+objects.size());
 	if (!pause) {
 		displayGame();
 		updateGame();
@@ -256,7 +259,7 @@ void garbageCollector(){
 	for(GameObject o: garbage){
 		if (o instanceof Projectile){
 			Projectile p = (Projectile)o;
-			p.owner.projectiles.remove(p);
+			p.owner.projectiles.remove(p);			
 		}
 		objects.remove(o);
 		o.kill();

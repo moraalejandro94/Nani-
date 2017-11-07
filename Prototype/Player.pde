@@ -87,11 +87,11 @@ void shootProjectile(){
 		elapsed = 0;
 		if (facingForward){
 			Projectile p = new Projectile(pos.x + mass, pos.y, projectileMass, projectileForce, this);
-			projectiles.add(p);
+			projectiles.add(p);		
 		}
 		else{
 		 Projectile p = new Projectile(pos.x - mass, pos.y, projectileMass, new Vec2(-projectileForce.x, projectileForce.y), this);
-		 projectiles.add(p); 
+		 projectiles.add(p); 		 
 	 }
  }
 }
