@@ -32,7 +32,9 @@ class Seeker extends Enemy {
 
 	void update(){
 		super.update();
-		seek(player.getPixelPos());
+		PVector playerPos = player.getPixelPos();
+		headginAngle = angleHeading(playerPos);
+		seek(playerPos);
 		elapsed++;
 		shootProjectile();
 	}
@@ -43,7 +45,11 @@ class Seeker extends Enemy {
 			Vec2 pos = box2d.getBodyPixelCoord(body);
 			Vec2 bulletPos = new Vec2(pos.x - mass, pos.y );
 			Vec2 bulletForce = new Vec2(-projectileForce.x, projectileForce.y);
-			elapsed = 0;			
+			elapsed = 0;
+			if (pos.x < player.getPixelPos().x){
+				bulletPos.x += mass*2;
+				bulletForce.x *= -1;
+			}			
 			Projectile p = new Projectile(bulletPos.x, bulletPos.y, projectileMass, bulletForce, this);
 			projectiles.add(p); 		 
 		}

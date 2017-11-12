@@ -10,8 +10,11 @@ char pauseButton = 'p';
 int FRAME_RATE = 60;
 float ROTATION_RATE = 0.004;
 int LEVEL_WAVES = 2;
-int PLAYER_HIT_MULTIPLIER = 30 * FRAME_RATE ;
+int PLAYER_HIT_MULTIPLIER = 30 * FRAME_RATE;
 float PARENT_COEFICIENT = 0.10;
+PImage gameBg;
+
+int SECONDS_TO_WAVE = 1;
 
 EnemyDna god;
 
@@ -30,10 +33,10 @@ boolean[] keys = new boolean[1024];
 void setup(){
 	frameRate(FRAME_RATE);
 	fullScreen(P2D);
-	background(0);
 	box2dInit();
 	gameInit();
 	colorsInit();
+	background(gameBg);
 }
 
 
@@ -52,6 +55,8 @@ void box2dInit() {
 
 // Inicializa el jugador y los elementos del juego
 void gameInit(){
+	gameBg = loadImage("Images/GameBg.jpg");
+	gameBg.resize(width, height);
 	player = new Player(width/2, height/2, 40);
 	player.setSpeed(2500);
 	player.boostSpeed = 7500;
@@ -117,7 +122,7 @@ void displayText(String textToShow, float x, float y, color textColor, int textS
 void draw(){
 	if (currentLevel.levelNumber > 0){
 		if (!pause) {
-			background(0);
+			background(gameBg);
 			box2d.step();
 			currentLevel.display();
 			currentLevel.update();

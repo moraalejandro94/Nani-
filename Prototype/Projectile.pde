@@ -10,7 +10,6 @@ class Projectile extends CollidingObject{
 
 	void display(){
 		Vec2 pos = box2d.getBodyPixelCoord(body);
-		float a = vec2Heading(getPos());
 		strokeWeight(2);
 		fill(0,0,255);
 		pushMatrix();

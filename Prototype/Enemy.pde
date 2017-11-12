@@ -2,9 +2,11 @@ class Enemy extends Ship {
 	int score;
 	EnemyDna dna;
 	color c; 
+	float headginAngle;
 
 	Enemy (float x, float y, float mass){
 		super(x,y,mass);
+		headginAngle = 0;
 	}
 
 	void update(){
@@ -26,6 +28,8 @@ class Enemy extends Ship {
 			Vec2 pos = box2d.getBodyPixelCoord(body);
 			pushMatrix();
 			translate(pos.x, pos.y);
+			imageMode(CENTER);
+			rotate(headginAngle);
 			fill(color(255*dna.speed , 255* dna.turnSpeed, 255*dna.shootElapsed));
 			ellipse(0, 0, mass, mass);
 			if (shipImage != null){

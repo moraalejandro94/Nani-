@@ -88,8 +88,9 @@ Vec2 vec2Limit(Vec2 vector, float max){
 	return vector;
 }
 
-float vec2Heading(Vec2 vector){
-	float angle = atan(vector.y/vector.x);
+float angleHeading(PVector vector){
+	PVector heading = PVector.sub(getPixelPos(), vector);
+	float angle = heading.heading();
 	return angle;
 
 }
