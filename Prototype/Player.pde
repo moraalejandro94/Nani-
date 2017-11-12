@@ -140,7 +140,7 @@ class Player extends Ship implements UserInput{
 	}
 
 	void shootProjectile(){
-		if(elapsed > shotSpeed){
+		if(elapsed > shotSpeed && !boosting){
 			Vec2 pos = box2d.getBodyPixelCoord(body);
 			Vec2 bulletPos = new Vec2(pos.x + mass, pos.y - mass / 1.5);
 			Vec2 bulletForce = new Vec2(projectileForce.x, projectileForce.y);

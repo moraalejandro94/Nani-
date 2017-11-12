@@ -23,21 +23,7 @@ class Ship extends CollidingObject{
 
 	void update(){
 		super.update();
-	}
-
-	void display(){
-		if (inScreen()){
-			Vec2 pos = box2d.getBodyPixelCoord(body);
-			pushMatrix();
-			translate(pos.x, pos.y);
-			fill(255,255,255);
-			ellipse(0, 0, mass, mass);
-			if (shipImage != null){
-				image(shipImage, 0, 0, mass, mass);
-			}
-			popMatrix();
-		}
-	}
+	}	
 
 	void shootProjectile(){
 		if(elapsed > shotSpeed){

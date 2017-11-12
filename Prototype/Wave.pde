@@ -66,11 +66,8 @@ class Wave{
 		jParent = iParent + 1;
 		maxChilds = int(costGlobal / 10);
 		lowestParent = int(maxChilds * PARENT_COEFICIENT) + 1;
-
-		println("maxChilds: " + maxChilds);
-		println("lowestParent: "+lowestParent);
-
-		while(currCost < costGlobal){
+		
+		while(currCost < costGlobal){			
 			EnemyDna parent1 = oldDna.get(iParent);
 			EnemyDna parent2 = oldDna.get(jParent);
 
@@ -80,25 +77,31 @@ class Wave{
 			int score = child.score;
 			currCost += score;
 
-			nextParentSelection();
+			nextParentSelection(oldDna.size());
 		}
 		this.costGlobal = currCost;
 		
 	}
 
 	EnemyDna combine(EnemyDna parent1, EnemyDna parent2){
-		return parent1;
+		float parent1Percent = random(0.420, 0.69);
+		float parent2Percent = 1 - parent1Percent;		
+		float childSpeed = parent1Percent*parent1.speed + parent2Percent * parent2.speed;
+		float childTurnSpeed = parent1Percent*parent1.turnSpeed + parent2Percent * parent2.turnSpeed;
+		float childShootElapsed = parent1Percent * parent1.shootElapsed + parent2Percent * parent2.shootElapsed;
+		EnemyDna child = new EnemyDna(childSpeed, childTurnSpeed, childShootElapsed);
+		return child;
 	}
 
-	void nextParentSelection(){
+	void nextParentSelection(int size){
 		jParent++;
-		if (jParent == lowestParent){
+		if (jParent == lowestParent || jParent >= size){
 			iParent++;
 			jParent = iParent + 1;
 		}
-		if (iParent == lowestParent){
-			int iParent = 0;
-			int jParent = iParent + 1;
+		if (iParent == lowestParent || iParent >= size){
+			iParent = 0;
+			jParent = iParent + 1;
 		}
 
 	}
