@@ -51,7 +51,8 @@ void box2dInit() {
 // Inicializa el jugador y los elementos del juego
 void gameInit(){
 	player = new Player(width/2, height/2, 40);
-	player.normalSpeed = 2500;
+	player.setSpeed(2500);
+	player.boostSpeed = 7500;
 	player.shipImage = loadImage("Images/Skins/" + Integer.toString(currentSkin) + ".png");
 	god = new EnemyDna(4200, 100, 25);
 	currentLevel = new Level(player, LEVEL_WAVES, 0);
@@ -81,6 +82,12 @@ void displayStats(){
 
 	textToShow = "HP : " + String.valueOf(player.hp);
 	displayText(textToShow, 0, 40, color(13, 108, 1), 30, LEFT);
+
+	textToShow = "Boost : ";
+	displayText(textToShow, 15, 90, color(13, 108, 1), 30, LEFT);
+
+	rect(120,70,player.boostAvailable, 20);
+
 
 	textToShow = "WAVE " + String.valueOf(currentLevel.waveCurrent + 1) + "/"+ String.valueOf(currentLevel.waveAmmount);
 	displayText(textToShow, width, 40, color(13, 108, 1), 30, RIGHT);
@@ -143,7 +150,9 @@ void beginContact(Contact c) {
 
 // Revisamos todas las posibles colisiones de un jugador
 void checkPlayer(CollidingObject object){
-	player.decreaseHP();
+	if (!player.boosting){
+		player.decreaseHP();
+	}
 	object.decreaseHP();
 	currentLevel.addToGarbage(object);
 }

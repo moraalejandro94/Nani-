@@ -45,7 +45,7 @@ class Menu{
  	   		currentLevel = new Level(player, LEVEL_WAVES, 1);
  	   	clickElapsed = 0;
  	   }
- 	   image(player.shipImage, width/2, height/2, 200, 200);
+ 	   image(player.shipImage, width/2, height/2, 250, 250);
  	   clickElapsed++;
  	}
 
