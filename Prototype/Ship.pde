@@ -3,8 +3,10 @@ class Ship extends CollidingObject{
 	float normalSpeed, boostSpeed;
 	ArrayList<Projectile> projectiles;
 	float projectileMass;
-  	Vec2 projectileForce;
-  	boolean facingForward = true;
+	Vec2 projectileForce;
+	boolean facingForward = true;
+
+	PImage shipImage;
 
 
 	Ship(float x, float y, float mass){
@@ -15,7 +17,7 @@ class Ship extends CollidingObject{
 		elapsed = 0;
 		shotSpeed = 10;
 		projectileMass = 10;
-    		projectileForce = new Vec2(20000,0);
+		projectileForce = new Vec2(20000,0);
 		this.projectiles = new ArrayList();
 	}
 
@@ -28,8 +30,11 @@ class Ship extends CollidingObject{
 			Vec2 pos = box2d.getBodyPixelCoord(body);
 			pushMatrix();
 			translate(pos.x, pos.y);
-			fill(255,0,0);
+			fill(255,255,255);
 			ellipse(0, 0, mass, mass);
+			if (shipImage != null){
+				image(shipImage, 0, 0, mass, mass);
+			}
 			popMatrix();
 		}
 	}
@@ -39,8 +44,8 @@ class Ship extends CollidingObject{
 			Vec2 pos = box2d.getBodyPixelCoord(body);
 			elapsed = 0;
 			Projectile p = new Projectile(pos.x + mass, pos.y, projectileMass, projectileForce, this);
-	  		projectiles.add(p);
-  		}
+			projectiles.add(p);
+		}
 	}
 
 }

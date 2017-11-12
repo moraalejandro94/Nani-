@@ -23,10 +23,8 @@ class Projectile extends CollidingObject{
 	void update(){		
 		if (!inScreen()){			
 			dead = true; 		
-			addToGarbage(this);			
+			currentLevel.addToGarbage(this);			
 		}
 		
 	}
-
-
 }

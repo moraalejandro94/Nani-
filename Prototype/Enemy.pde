@@ -1,5 +1,5 @@
 class Enemy extends Ship {
-	int score, cost;	
+	int score;
 	Enemy (float x, float y, float mass){
 		super(x,y,mass);
 	}
