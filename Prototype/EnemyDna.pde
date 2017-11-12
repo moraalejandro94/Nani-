@@ -1,11 +1,12 @@
-class EnemyDna{
+class EnemyDna {
 	float speed;
 	float turnSpeed;
 	float shootElapsed;
 	float mass;
 	float fitness;
-
+	int lifeElapsed;
 	int score;
+	int playerHits; 
 
 	EnemyDna(float speed, float turnSpeed, float shootElapsed){
 		this.speed = speed;
@@ -13,6 +14,8 @@ class EnemyDna{
 		this.shootElapsed = shootElapsed;
 		this.mass = mass;
 		fitness = 0;
+		lifeElapsed = 0;
+		playerHits = 0;
 		score = getScore();
 	}
 

@@ -7,9 +7,11 @@ import org.jbox2d.dynamics.contacts.*;
 
 boolean pause = false;
 char pauseButton = 'p';
-int gameFrame = 60;
+int FRAME_RATE = 60;
 float ROTATION_RATE = 0.004;
 int LEVEL_WAVES = 2;
+int PLAYER_HIT_MULTIPLIER = 30 * FRAME_RATE ;
+float PARENT_COEFICIENT = 0.10;
 
 EnemyDna god;
 
@@ -26,7 +28,7 @@ Box2DProcessing box2d;
 boolean[] keys = new boolean[1024];
 
 void setup(){
-	frameRate(gameFrame);
+	frameRate(FRAME_RATE);
 	fullScreen(P2D);
 	background(0);
 	box2dInit();
@@ -152,6 +154,15 @@ void beginContact(Contact c) {
 void checkPlayer(CollidingObject object){
 	if (!player.boosting){
 		player.decreaseHP();
+		if (object instanceof Enemy){
+			((Enemy) object).playerHit();
+		}
+		else if (object instanceof Projectile){
+			Projectile projectile = (Projectile) object;
+			if (projectile.owner instanceof Enemy){
+				((Enemy) projectile.owner).playerHit(); 
+			}
+		}
 	}
 	object.decreaseHP();
 	currentLevel.addToGarbage(object);

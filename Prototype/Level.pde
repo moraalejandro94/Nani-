@@ -47,7 +47,7 @@ class Level{
 		objects.add(flock);
 		objects.add(player);
 
-		wave = new Wave(flock, 10, 50, gameFrame * 6);
+		wave = new Wave(flock, 10, 50, FRAME_RATE * 6);
 		wave.enemyImage = enemyImage;
 	}
 
@@ -85,15 +85,15 @@ class Level{
 	}
 
 	int secondsToWave(){
-		return wave.startElapse / gameFrame;
+		return wave.startElapse / FRAME_RATE;
 	}
 
 	void nextWave(){
 		// Caca genetica
 		if (flock.agents.size() == 0){
 			waveCurrent++;
-			completed = waveCurrent == waveAmmount;
-			wave = new Wave(flock, 5, 50, gameFrame * 6);
+			completed = waveCurrent == waveAmmount;			
+			wave = new Wave(flock, 5, 50, FRAME_RATE * 6, wave.sortedDnas);
 			wave.enemyImage = enemyImage;
 		}
 	}
@@ -102,6 +102,11 @@ class Level{
 	void addToGarbage(GameObject object){
 		if (object.dead){
 			garbage.add(object);
+			if (object instanceof Enemy){
+				Enemy e = (Enemy) object;				
+				e.generateFitness();
+				wave.insertIntoSortedDNAS(e.dna);
+			}
 		}
 	}
 
