@@ -51,7 +51,7 @@ class Player extends Ship implements UserInput{
 	void move(int direction) {
 		speed.normalize();
 		speed.add(getDirectionVector(direction));
-		if (boosting){
+		if (boosting){			
 			speed.setMag(boostSpeed);	
 		}
 		else{
@@ -63,8 +63,8 @@ class Player extends Ship implements UserInput{
 
 	void moveUp() {
 		if (keys[moveUp]) {
-			if (getPixelPos().y > mass){
-				move(UP);
+			if (getPixelPos().y > mass && !boosting){				
+				move(UP);				
 			}
 		}
 	}
@@ -106,7 +106,7 @@ class Player extends Ship implements UserInput{
 
 	void moveDown() {
 		if (keys[moveDown]) {
-			if (getPixelPos().y < height - mass){
+			if (getPixelPos().y < height - mass && !boosting){
 				move(DOWN);
 			}
 		}
