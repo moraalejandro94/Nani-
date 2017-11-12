@@ -63,7 +63,9 @@ class Player extends Ship implements UserInput{
 
 	void moveUp() {
 		if (keys[moveUp]) {
-			move(UP);
+			if (getPixelPos().y > mass){
+				move(UP);
+			}
 		}
 	}
 
@@ -104,7 +106,9 @@ class Player extends Ship implements UserInput{
 
 	void moveDown() {
 		if (keys[moveDown]) {
-			move(DOWN);
+			if (getPixelPos().y < height - mass){
+				move(DOWN);
+			}
 		}
 	}
 

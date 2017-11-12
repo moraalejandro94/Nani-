@@ -32,46 +32,31 @@ public class Prototype extends PApplet {
 
 boolean pause = false;
 char pauseButton = 'p';
+int gameFrame = 60;
+float ROTATION_RATE = 0.004f;
+int LEVEL_WAVES = 2;
 
-PImage bg;
-float angle;
+EnemyDna god;
+
+Level currentLevel;
+
+Menu menu;
+int currentSkin = 1;
+int maxSkins = 6;
 
 int pointsColor;
 
 Player player;
-Flock flock;
 Box2DProcessing box2d;
 boolean[] keys = new boolean[1024];
-PVector worldDirection;
-
-ArrayList<PVector> points;
-PVector start;
-
-boolean boss;
-
-ArrayList<GameObject> objects;
-ArrayList<GameObject> garbage;
 
 public void setup(){
-	frameRate(60);
-	points = new ArrayList();
-	start = new PVector(width/2 + 500,150);
-	boss = false;
-	bg = loadImage("data/bg.png");
-	angle = 0;
-	fractal();
+	frameRate(gameFrame);
 	
 	background(0);
 	box2dInit();
 	gameInit();
 	colorsInit();
-}
-
-
-public void fractal(){
-	points.add(new PVector(width/2 + 200, 100));
-	points.add(new PVector(width/4 + 200, height - 100));
-	points.add(new PVector(3*width/4 + 200, height - 100));
 }
 
 
@@ -89,71 +74,19 @@ public void box2dInit() {
 }
 
 // Inicializa el jugador y los elementos del juego
-public void gameInit(){	
-	objects = new ArrayList();
-	garbage = new ArrayList();
-	worldDirection = new PVector(0, 0);
-	player = (boss) ? new Player(200, height/2, 40) : new Player(width/2, height/2, 40);
-	player.normalSpeed = 2500;
-	flock = new Flock(player, 500);
-	objects.add(player);
-	objects.add(flock);
-
-}
-
-// Muestra y rota los elementos del fondo
-public void displayBackground(){
-	pushMatrix();
-	translate(width/2, height + width/2.5f);
-	imageMode(CENTER);
-	rotate(angle);
-	image(bg, 0, 0);
-	popMatrix();
-
-}
-
-// Muestra el juego y poine a correr el mundo
-public void displayGame(){
-	background(0);
-	displayBackground();
-	garbageCollector();	
-	box2d.step();
-	for(GameObject o : objects){
-		o.update();
-		o.display();
-	}
-}
-
-// Actualiza los elementos del juego
-public void updateGame(){
-	if (boss){
-		int i = PApplet.parseInt(random(points.size()))	;
-		PVector dist = PVector.sub(points.get(i), start);
-		dist.div(2);
-		start.add(dist);
-
-		Seeker s = new Seeker(start.x, start.y, random(5, 10), random(60, 70));
-		s.normalSpeed = (frameCount%30 == 0) ? random(1500, 2500) : 0 ;
-		s.score = 1;
-		objects.add(s);
-	}else{
-		if (frameCount % 60 == 0){
-			Seeker s = new Seeker(width - 30, random(0, height), random(30 , 60), random(60, 70));
-			s.normalSpeed = random(1000, 1500);
-			s.score = 10;
-			flock.addEnemy(s);
-		}
-		for (Projectile p  : player.projectiles){
-			p.update();
-		}
-	}
+public void gameInit(){
+	player = new Player(width/2, height/2, 40);
+	player.setSpeed(2500);
+	player.boostSpeed = 7500;
+	player.shipImage = loadImage("Images/Skins/" + Integer.toString(currentSkin) + ".png");
+	god = new EnemyDna(4200, 100, 25);
+	currentLevel = new Level(player, LEVEL_WAVES, 0);
+	menu = new Menu();
 }
 
 // Muestra los elementos del juego pero no los actualiza y muestra el men\u00fa de pausa
 public void displayPause(){
-	for(GameObject o : objects){
-		o.display();
-	}
+	currentLevel.display();
 	noStroke();
 	fill(0, 200);
 	rect(0, 0, width, height);
@@ -168,35 +101,56 @@ public void displayStats(){
 	stroke(16, 87,  177, 60);
 	noFill();
 	arc(width/2, height/5, width + 200, height/4, -PI, 0);
-	textSize(40);
-	textAlign(CENTER);
-	String score = String.valueOf(player.score);
-	fill(pointsColor);
-	text(score, width - textWidth(score), 60);
-	String hp = "HP : " + String.valueOf(player.hp);
-	fill(13, 108, 1);
-	text(hp, 0 + textWidth(hp), 60);
-	if(boss){
-		fill(255, 0, 0);
-		rectMode(CENTER);
-		float w = 800 - player.score*2;
-		rect(width/2, 40, w, 10);
-		textSize(30);
-		fill(255);
-		text("Wac\u0142aw Sierpi\u0144ski", width/2, 30);
+
+	String textToShow = String.valueOf(player.score);
+	displayText(textToShow, width/2, 40, pointsColor, 40, CENTER);
+
+	textToShow = "HP : " + String.valueOf(player.hp);
+	displayText(textToShow, 0, 40, color(13, 108, 1), 30, LEFT);
+
+	textToShow = "Boost : ";
+	displayText(textToShow, 15, 90, color(13, 108, 1), 30, LEFT);
+
+	rect(120,70,player.boostAvailable, 20);
+
+
+	textToShow = "WAVE " + String.valueOf(currentLevel.waveCurrent + 1) + "/"+ String.valueOf(currentLevel.waveAmmount);
+	displayText(textToShow, width, 40, color(13, 108, 1), 30, RIGHT);
+	if (currentLevel.inWave()){
+		// progresso del wave
+	}else{
+		textToShow = "WAVE STARTING IN " + String.valueOf(currentLevel.secondsToWave());
+		displayText(textToShow, width/2, 75, color(13, 108, 1), 25, CENTER);
 	}
+}
+
+public void displayText(String textToShow, float x, float y, int textColor, int textSize, int align){
+	if (align == LEFT){
+		x += textWidth(textToShow) / 2;
+	}else if(align == RIGHT){
+		x -= textWidth(textToShow) / 2;
+	}
+	textAlign(CENTER);
+	textSize(textSize);
+	fill(textColor);
+	text(textToShow, x, y);
 }
 
 
 public void draw(){
-	//println("obe: "+objects.size());
-	if (!pause) {
-		displayGame();
-		updateGame();
+	if (currentLevel.levelNumber > 0){
+		if (!pause) {
+			background(0);
+			box2d.step();
+			currentLevel.display();
+			currentLevel.update();
+		}else{
+			displayPause();
+		}
+		displayStats();
 	}else{
-		displayPause();
+		menu.showMenu();
 	}
-	displayStats();
 }
 
 // Obtenemos el objecto a partir del fixture
@@ -221,16 +175,18 @@ public void beginContact(Contact c) {
 
 // Revisamos todas las posibles colisiones de un jugador
 public void checkPlayer(CollidingObject object){
-	player.decreaseHP();
+	if (!player.boosting){
+		player.decreaseHP();
+	}
 	object.decreaseHP();
-	addToGarbage(object);
+	currentLevel.addToGarbage(object);
 }
 
 // Se hace la acci\u00f3n de dispararle a un enemigo
 public void shootEnemy(Projectile p, Enemy e){
 	e.decreaseHP();
 	p.decreaseHP();
-	addToGarbage(p);
+	currentLevel.addToGarbage(p);
 }
 
 // Se revisa todas las posibles colisiones de un enemigo con otro objeto
@@ -244,11 +200,8 @@ public void checkEnemy(Enemy enemy, CollidingObject object){
 // Se revisa el estado del enemigo
 public void checkEnemy(Enemy enemy){
 	if(enemy.dead){
-		addToGarbage(enemy);
-		PVector pos = enemy.getPixelPos();
-		ParticleSystem particleSystem = new ParticleSystem(pos.x, pos.y,enemy.score);
-		objects.add(particleSystem);
-		player.score += enemy.score;
+		currentLevel.addToGarbage(enemy);
+		currentLevel.enemyDeath(enemy);
 	}
 }
 
@@ -262,7 +215,9 @@ public void checkProyectile(Projectile projectile, CollidingObject object){
 }
 
 public void keyPressed(){
-	keys[keyCode] = true;
+	if (!pause){
+		keys[keyCode] = true;
+	}
 	if (key == pauseButton){
 		pause = !pause;
 	}
@@ -272,34 +227,10 @@ public void keyReleased(){
 	keys[keyCode] = false;
 }
 
-// Agregamos los objetos a eliminar del array principal
-public void addToGarbage(GameObject object){
-	if (object.dead){
-		garbage.add(object);
-	}
-}
-
-// Limpiamos el array principal
-public void garbageCollector(){
-	for(GameObject o: garbage){
-		if (o instanceof Projectile){
-			Projectile p = (Projectile)o;
-			p.owner.projectiles.remove(p);			
-		}
-		objects.remove(o);
-		o.kill();
-	}
-}
-
-// Agregamos la direcci\u00f3n opuesta a los elementos del mundo cuando el jugador se mueve
-public void screenController(float speed){
-	worldDirection.x = speed * -1;
-	for(GameObject o : objects){
-		o.setSpeed(worldDirection);
-	}
-}
-
 public void endContact(Contact c) {}
+class Boss{
+	
+}
 class CollidingObject extends GameObject{
 	Body body;
 	int hp;
@@ -415,9 +346,31 @@ public void update(){
 }
 }
 class Enemy extends Ship {
-	int score, cost;	
+	int score;
 	Enemy (float x, float y, float mass){
 		super(x,y,mass);
+	}
+}
+class EnemyDna{
+	float speed;
+	float turnSpeed;
+	float shootElapsed;
+	float mass;
+	float fitness;
+
+	int score;
+
+	EnemyDna(float speed, float turnSpeed, float shootElapsed){
+		this.speed = speed;
+		this.turnSpeed = turnSpeed;
+		this.shootElapsed = shootElapsed;
+		this.mass = mass;
+		fitness = 0;
+		score = getScore();
+	}
+
+	public int getScore(){
+		return (int) map(speed, 0,1,5,1) * 10 ;
 	}
 }
 class Flock extends GameObject {
@@ -573,6 +526,205 @@ abstract class GameObject{
 	 public abstract void update();
 
 }
+class Level{
+	Player player;
+	int levelNumber;
+
+	int waveAmmount;
+	int waveCurrent;
+	Wave wave;
+
+	ArrayList<GameObject> objects;
+	ArrayList<GameObject> garbage;
+	Flock flock;
+
+	PVector worldDirection;
+	PImage worldImage;
+	float worldAngle;
+	String mediaPath;
+
+	PImage enemyImage;
+
+	boolean completed;
+	
+	Level(Player player, int waveAmmount, int levelNumber){
+		this.player = player;
+		this.waveAmmount = waveAmmount;
+		waveCurrent = 0;
+
+		this.levelNumber = levelNumber;
+		mediaPath = "Images/Level_" + levelNumber;
+		completed = false;
+
+		worldAngle = 0;
+		if (levelNumber > 0){
+			worldImage = loadImage(mediaPath + "/bg.png");
+			enemyImage = loadImage(mediaPath + "/enemy.png");
+		}
+
+		objects = new ArrayList();
+		garbage = new ArrayList();
+		worldDirection = new PVector(0, 0);
+		flock = new Flock(player, 500);
+
+		objects.add(flock);
+		objects.add(player);
+
+		wave = new Wave(flock, 10, 50, gameFrame * 6);
+		wave.enemyImage = enemyImage;
+	}
+
+
+	public void display(){
+		if (levelNumber > 0){
+			garbageCollector();
+			displayBackground();
+			for(GameObject o : objects){
+				o.update();
+				o.display();
+			}	
+		}
+	}
+
+	public boolean inWave(){
+		return wave.startElapse <= 0;
+	}
+
+	// Actualiza los elementos del juego
+	public void update(){
+		if (!completed && levelNumber > 0){
+			updateLevel();
+		}
+	}
+
+	public void updateLevel(){
+		if (wave.cleared){
+			nextWave();
+		}
+		wave.update();
+		for (Projectile p  : player.projectiles){
+			p.update();
+		}
+	}
+
+	public int secondsToWave(){
+		return wave.startElapse / gameFrame;
+	}
+
+	public void nextWave(){
+		// Caca genetica
+		if (flock.agents.size() == 0){
+			waveCurrent++;
+			completed = waveCurrent == waveAmmount;
+			wave = new Wave(flock, 5, 50, gameFrame * 6);
+			wave.enemyImage = enemyImage;
+		}
+	}
+
+	// Agregamos los objetos a eliminar del array principal
+	public void addToGarbage(GameObject object){
+		if (object.dead){
+			garbage.add(object);
+		}
+	}
+
+	// Limpiamos el array principal
+	public void garbageCollector(){
+		for(GameObject o: garbage){
+			if (o instanceof Projectile){
+				Projectile p = (Projectile)o;
+				p.owner.projectiles.remove(p);			
+			}
+			objects.remove(o);
+			o.kill();
+		}
+	}
+
+	public void enemyDeath(Enemy enemy){
+		PVector deathPosition = enemy.getPixelPos();
+		ParticleSystem particleSystem = new ParticleSystem(deathPosition.x, deathPosition.y, enemy.score);
+		objects.add(particleSystem);
+		player.score += enemy.score;
+	}
+
+	// Agregamos la direcci\u00f3n opuesta a los elementos del mundo cuando el jugador se mueve
+	public void screenController(float speed){
+		worldDirection.x = speed * -1;
+		for(GameObject o : objects){
+			o.setSpeed(worldDirection);
+		}
+	}
+
+	public void addRotation(float rotation){
+		worldAngle += rotation;
+	}
+
+
+	// Muestra y rota los elementos del fondo
+	public void displayBackground(){
+		if (levelNumber > 0){
+			pushMatrix();
+			translate(width/2, height + width/1.8f);
+			imageMode(CENTER);
+			rotate(worldAngle);
+			image(worldImage, 0, 0, width * 1.5f, width * 1.5f);
+			popMatrix();
+		}
+
+	}
+}
+class Menu{
+	int clickElapsed = 0;
+	PVector startButtonPos = new PVector(width/2, height/2 + 200);
+	PImage nextButton;
+	PImage previousButton;
+	PImage startButton;
+
+	public Menu() {
+		nextButton = loadImage("Images/Buttons/next.png");
+		previousButton = loadImage("Images/Buttons/previous.png");
+		startButton = loadImage("Images/Buttons/start.png");
+	}
+
+	public void showMenu() {
+		background(255);
+		noFill();
+		//noStroke();
+		imageMode(CENTER);
+
+    		// Next Skin
+    		image(nextButton, width/2 + width/4, height/2);
+    		if (mousePressed && 
+    			mouseX > width/2 + width/4 - 25 && mouseX < width/2 + width/4 + 25 && 
+    			mouseY > height/2 - 25 && mouseY < height/2 + 25 && clickElapsed > 20){
+    			currentSkin = (currentSkin % maxSkins)+1;
+    			player.shipImage = loadImage("Images/Skins/" + Integer.toString(currentSkin) + ".png");
+    			clickElapsed = 0;
+    		}
+
+    		// Previous Skin
+    		image(previousButton, width/2 - width/4, height/2);
+    		if (mousePressed && 
+    			mouseX > width/2 - width/4 - 25 && mouseX < width/2 - width/4 + 25 && 
+    			mouseY > height/2 - 25 && mouseY < height/2 + 25 && clickElapsed > 20){
+    			currentSkin = (currentSkin == 1) ? maxSkins : currentSkin - 1;
+    			player.shipImage = loadImage("Images/Skins/" + Integer.toString(currentSkin) + ".png");
+    			clickElapsed = 0;
+    		}
+
+ 	   	// Bot\u00f3n de Start   
+ 	   	image(startButton, width/2, height/2 + height/3); 
+ 	   	if (mousePressed && clickElapsed > 20 && 
+ 	   		(mouseX > width/2 - 100 && mouseX < width/2 + 100) && 
+ 	   		(mouseY > height/2 + height/3 - 50 && mouseY < height/2 + height/3 + 50)){
+ 	   		currentLevel = new Level(player, LEVEL_WAVES, 1);
+ 	   	clickElapsed = 0;
+ 	   }
+ 	   image(player.shipImage, width/2, height/2, 250, 250);
+ 	   clickElapsed++;
+ 	}
+
+ }
 enum Directions{
   LEFT, RIGHT, UP, DOWN
 }
@@ -592,7 +744,7 @@ public PVector getDirectionVector(int direction){
     case UP:
     return up;
     case DOWN:
-    return down;
+    return down;    
   }
   return nullMove;
 }
@@ -730,6 +882,9 @@ class Player extends Ship implements UserInput{
 	int score, recoveringElapsed, recoveryTime, blinkElapsed, blinkTime;
 	boolean recovering = false;
 	boolean display = true;
+	boolean boosting; 
+	int boostTime, boostAvailable, boostRecharge, boostRechargeElapsed;	
+
 
 	Player(float x, float y, float mass){
 		super(x, y, mass);
@@ -738,10 +893,28 @@ class Player extends Ship implements UserInput{
 		recoveryTime = 120;
 		blinkElapsed = 0;
 		blinkTime = 15;
+		boosting = false;
+		boostTime = 300;
+		boostAvailable =  300; 
+		boostRecharge  = 60;
+		boostRechargeElapsed = 0;
+	}
+
+	public void setSpeed(int speed){
+		this.normalSpeed =  speed;
 	}
 
 	public void update(){
 		movementController();
+		if (boosting && boostAvailable != 0){			
+			boostAvailable--;
+		}
+		if (!boosting && boostAvailable <= boostTime){
+			boostRechargeElapsed ++;
+			if (boostRechargeElapsed >= boostRecharge){
+				boostAvailable++;
+			}
+		}
 		super.update();
 	}
 
@@ -758,114 +931,163 @@ class Player extends Ship implements UserInput{
 	public void move(int direction) {
 		speed.normalize();
 		speed.add(getDirectionVector(direction));
-		speed.setMag(normalSpeed);
-		screenController(speed.x);
+		if (boosting){
+			speed.setMag(boostSpeed);	
+		}
+		else{
+			speed.setMag(normalSpeed);			
+		}
+		currentLevel.screenController(speed.x);
 		setSpeed(speed);
 	}
 
 	public void moveUp() {
 		if (keys[moveUp]) {
-			move(UP);
+			if (getPixelPos().y > mass){
+				move(UP);
+			}
 		}
 	}
 
 	public void moveLeft() {
-		if (keys[moveLeft]) {
-			move(LEFT);
-			angle += 0.005f;
+		if (keys[moveLeft]) {			
+			if(!boosting){						
+				move(LEFT);	
+				currentLevel.addRotation(ROTATION_RATE);
+			}
 		}
 	}
 
 	public void moveRight() {
 		if (keys[moveRight]) {
-		 move(RIGHT);     
-		 angle -= 0.005f;
-	 }
- }
- public void faceRight(){
-	if(keys[faceRight]){
-		facingForward = true;
-	}
-}
-
-
-public void faceLeft(){
-	if(keys[faceLeft]){
-		facingForward = false;
-	}
-}
-
-
-public void moveDown() {
-	if (keys[moveDown]) {
-	 move(DOWN);
- }
-}
-
-public void shoot() {
-	if (keys[shoot]) {
-	 shootProjectile();
- }
-}
-
-
-public void shootProjectile(){
-	if(elapsed > shotSpeed){
-		Vec2 pos = box2d.getBodyPixelCoord(body);
-		elapsed = 0;
-		if (facingForward){
-			Projectile p = new Projectile(pos.x + mass, pos.y, projectileMass, projectileForce, this);
-			projectiles.add(p);		
+			if(!boosting){									
+				currentLevel.addRotation(-ROTATION_RATE);
+				move(RIGHT);     
+			}
 		}
-		else{
-		 Projectile p = new Projectile(pos.x - mass, pos.y, projectileMass, new Vec2(-projectileForce.x, projectileForce.y), this);
-		 projectiles.add(p); 		 
-	 }
- }
-}
+	}
+	public void faceRight(){
+		if(keys[faceRight]){
+			if (!boosting){			
+				facingForward = true;
+			}
+		}
+	}
 
-public void movementController() {
-	moveUp();
-	moveLeft();
-	moveDown();
-	moveRight();
-	faceLeft();
-	faceRight();
-	shoot();
-	elapsed++;
-	blinkElapsed ++;
-	recoveringElapsed++;
-	if (recoveringElapsed > recoveryTime){
-	 recovering = false;    
- }  
- if (recovering && blinkElapsed > blinkTime){
-	 display = !display;
-	 blinkElapsed = 0;
- }
-}
 
-public void display(){
-	if (inScreen() && !recovering){
-	 Vec2 pos = box2d.getBodyPixelCoord(body);
-	 pushMatrix();
-	 translate(pos.x, pos.y);      
-	 fill(0,255,0);
-	 ellipse(0, 0, mass, mass);
-	 popMatrix();
- }
- if (inScreen() && display){    
-	 Vec2 pos = box2d.getBodyPixelCoord(body);
-	 pushMatrix();
-	 translate(pos.x, pos.y);      
-	 fill(0,255,0);
-	 ellipse(0, 0, mass, mass);
-	 popMatrix();    
- }
- for(Projectile p : projectiles){
-	 p.display();
- }
+	public void faceLeft(){
+		if(keys[faceLeft]){
+			if (!boosting){
+				facingForward = false;
+			}
+		}
+	}
 
-}
+
+	public void moveDown() {
+		if (keys[moveDown]) {
+			if (getPixelPos().y < height - mass){
+				move(DOWN);
+			}
+		}
+	}
+
+	public void shoot() {
+		if (keys[shoot]) {
+			shootProjectile();
+		}
+	}
+
+
+	public void boost(){		
+		if (keys[boost]){			
+			boosting = true;	
+			if (boostAvailable > 0){	
+				boostRechargeElapsed = 0;			
+				if (facingForward){
+					move(RIGHT);
+					currentLevel.addRotation(-ROTATION_RATE * (boostSpeed/normalSpeed));
+				}
+				else {
+					move(LEFT);
+					currentLevel.addRotation(ROTATION_RATE * (boostSpeed/normalSpeed));	
+				}
+			}		
+		}
+		else{			
+			boosting = false; 			
+		}
+	}
+
+	public void shootProjectile(){
+		if(elapsed > shotSpeed){
+			Vec2 pos = box2d.getBodyPixelCoord(body);
+			Vec2 bulletPos = new Vec2(pos.x + mass, pos.y - mass / 1.5f);
+			Vec2 bulletForce = new Vec2(projectileForce.x, projectileForce.y);
+			elapsed = 0;
+			if (!facingForward){
+				bulletPos.x -= mass*2;
+				bulletForce.x *= -1;
+			}
+			Projectile p = new Projectile(bulletPos.x, bulletPos.y, projectileMass, bulletForce, this);
+			projectiles.add(p); 		 
+		}
+	}
+
+	public void movementController() {
+		moveUp();
+		moveLeft();
+		moveDown();
+		moveRight();
+		faceLeft();
+		faceRight();
+		shoot();
+		boost();
+		elapsed++;
+		blinkElapsed ++;
+		recoveringElapsed++;
+		if (recoveringElapsed > recoveryTime){
+			recovering = false;    
+		}  
+		if (recovering && blinkElapsed > blinkTime){
+			display = !display;
+			blinkElapsed = 0;
+		}
+	}
+
+	public void display(){
+		if (inScreen() && !recovering){
+			Vec2 pos = box2d.getBodyPixelCoord(body);
+			pushMatrix();
+			translate(pos.x, pos.y);      
+			fill(0,255,0);
+			displayShip();
+			popMatrix();
+		}
+		if (inScreen() && display && recovering){    
+			Vec2 pos = box2d.getBodyPixelCoord(body);
+			pushMatrix();
+			translate(pos.x, pos.y);      
+			fill(0,255,0);
+			displayShip();
+			popMatrix();    
+		}
+		for(Projectile p : projectiles){
+			p.display();
+		}
+
+	}
+
+	public void displayShip(){
+		if (shipImage != null){
+			if (!facingForward){
+				scale(-1,1);
+			}
+			image(shipImage, 0, 0, mass * 2, mass * 2);
+		}else{
+			ellipse(0, 0, mass, mass);
+		}
+	}
 
 }
 
@@ -894,12 +1116,10 @@ class Projectile extends CollidingObject{
 	public void update(){		
 		if (!inScreen()){			
 			dead = true; 		
-			addToGarbage(this);			
+			currentLevel.addToGarbage(this);			
 		}
 		
 	}
-
-
 }
 class Seeker extends Enemy {
 	float rotationSpeed;
@@ -907,6 +1127,14 @@ class Seeker extends Enemy {
 	Seeker(float x, float y, float mass, float rotationSpeed){
 		super(x,y,mass);
 		this.rotationSpeed = rotationSpeed;
+	}
+
+	Seeker(float x, float y, float rotationSpeed, float normalSpeed, int shotSpeed){		
+		super(x,y, map (normalSpeed,10, god.speed, 60, 15));
+		this.rotationSpeed = rotationSpeed;
+		this.normalSpeed = normalSpeed; 
+		this.shotSpeed = shotSpeed; 
+		projectileForce = new Vec2(15000,0);
 	}
 
 	public void seek(PVector target) {
@@ -920,11 +1148,28 @@ class Seeker extends Enemy {
 
 	public void display() {
 		super.display();
+		for(Projectile p : projectiles){
+			p.display();
+		}
 	}
 
 	public void update(){
 		super.update();
 		seek(player.getPixelPos());
+		elapsed++;
+		shootProjectile();
+	}
+
+
+	public void shootProjectile(){
+		if(elapsed > shotSpeed){
+			Vec2 pos = box2d.getBodyPixelCoord(body);
+			Vec2 bulletPos = new Vec2(pos.x - mass, pos.y );
+			Vec2 bulletForce = new Vec2(-projectileForce.x, projectileForce.y);
+			elapsed = 0;			
+			Projectile p = new Projectile(bulletPos.x, bulletPos.y, projectileMass, bulletForce, this);
+			projectiles.add(p); 		 
+		}
 	}
 
 
@@ -935,8 +1180,10 @@ class Ship extends CollidingObject{
 	float normalSpeed, boostSpeed;
 	ArrayList<Projectile> projectiles;
 	float projectileMass;
-  	Vec2 projectileForce;
-  	boolean facingForward = true;
+	Vec2 projectileForce;
+	boolean facingForward = true;
+
+	PImage shipImage;
 
 
 	Ship(float x, float y, float mass){
@@ -947,7 +1194,7 @@ class Ship extends CollidingObject{
 		elapsed = 0;
 		shotSpeed = 10;
 		projectileMass = 10;
-    		projectileForce = new Vec2(20000,0);
+		projectileForce = new Vec2(20000,0);
 		this.projectiles = new ArrayList();
 	}
 
@@ -960,8 +1207,11 @@ class Ship extends CollidingObject{
 			Vec2 pos = box2d.getBodyPixelCoord(body);
 			pushMatrix();
 			translate(pos.x, pos.y);
-			fill(255,0,0);
+			fill(255,255,255);
 			ellipse(0, 0, mass, mass);
+			if (shipImage != null){
+				image(shipImage, 0, 0, mass, mass);
+			}
 			popMatrix();
 		}
 	}
@@ -971,8 +1221,8 @@ class Ship extends CollidingObject{
 			Vec2 pos = box2d.getBodyPixelCoord(body);
 			elapsed = 0;
 			Projectile p = new Projectile(pos.x + mass, pos.y, projectileMass, projectileForce, this);
-	  		projectiles.add(p);
-  		}
+			projectiles.add(p);
+		}
 	}
 
 }
@@ -984,6 +1234,7 @@ interface UserInput{
 	char faceLeft = 'K';
 	char faceRight = 'L';
 	char shoot = ' ';
+	char boost ='Q'; 
 
 	public void movementController();
 	public void moveUp();
@@ -993,6 +1244,95 @@ interface UserInput{
 	public void faceRight();
 	public void faceLeft();
 	public void shoot();
+	public void boost();
+}
+class Wave{
+	int costActive;
+	int costGlobal;
+	int costUsed;
+
+	float multiplierGod;
+	float multiplierLevel;
+
+	Flock flock;
+	boolean cleared;
+
+	ArrayList<EnemyDna> dnas;
+	int startElapse;
+	int currEnemy;
+
+	PImage enemyImage;
+
+	Wave(Flock flock, int costActive, int costGlobal, int elapse){
+		generalInit(flock, costActive, costGlobal, elapse);
+		createDna();
+	}
+
+	Wave(Flock flock, int costActive, int costGlobal, int elapse, ArrayList<EnemyDna> oldDna){
+		generalInit( flock,  costActive, costGlobal, elapse);
+		createDna(oldDna);
+	}
+
+	public void generalInit(Flock flock, int costActive, int costGlobal, int elapse){
+		this.flock = flock;
+		this.costActive = costActive;
+		this.costGlobal = costGlobal;
+		startElapse = elapse;
+		costUsed = 0;
+		currEnemy = 0;
+		cleared = false;
+	}
+
+	public void createDna(){
+		int currCost = 0;
+		dnas = new ArrayList();
+		while(currCost < costGlobal){
+			float speedPercent = random(0, 1);
+			float turnPercent = random( 0, 1-speedPercent);
+			float fireRate = 1 - (speedPercent + turnPercent) + 0.0000000001f;
+			EnemyDna dna = new EnemyDna(speedPercent, turnPercent , fireRate);
+			dnas.add(dna);
+			currCost += dna.score;
+		}
+		this.costGlobal = currCost;
+		
+	}
+
+	public void createDna(ArrayList<EnemyDna> oldDna){
+		int currCost = 0;
+		while(currCost < costGlobal){
+			float speedPercent = random(0, 1);
+			float turnPercent = random( 0, 1-speedPercent);
+			float fireRate = 1 - (speedPercent + turnPercent);
+			EnemyDna dna = new EnemyDna(speedPercent, turnPercent , fireRate);
+			dnas.add(dna);
+			int score = dna.score;
+			currCost += score;
+		}
+		this.costGlobal = currCost;
+		
+	}
+
+	public void update(){
+		if (frameCount % 60 == 0 && currEnemy < dnas.size() && startElapse <= 0 && currentCost() < costActive){
+			EnemyDna currDna = dnas.get(currEnemy);
+			Seeker s = new Seeker(width, random(0, height) ,currDna.turnSpeed * god.turnSpeed, currDna.speed * god.speed, (int)( (god.shootElapsed / currDna.shootElapsed) ));			
+			currEnemy ++;			
+			s.score = currDna.getScore();
+			s.shipImage = enemyImage;
+			flock.addEnemy(s);
+			cleared = currEnemy >= dnas.size();
+		}
+		startElapse--;
+	}
+
+	public int currentCost(){
+		int totalScore = 0;
+		for(Enemy e: flock.agents){
+			totalScore += e.score;
+		}
+		return totalScore;
+	}
 }
   public void settings() { 	fullScreen(P2D); }
   static public void main(String[] passedArgs) {
