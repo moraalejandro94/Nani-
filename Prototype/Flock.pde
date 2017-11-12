@@ -98,7 +98,7 @@ class Flock extends GameObject {
 	void applyAlign(Enemy agent){
 		if (alignCount > 0){
 			alignForce.div(alignCount);
-			alignForce.setMag(alignRatio);
+			alignForce.setMag(alignRatio * agent.dna.speed);
 			alignForce.limit(maxForce);
 			agent.setSpeed(alignForce);
 			
@@ -108,7 +108,7 @@ class Flock extends GameObject {
 	void applySeparation(Enemy agent){
 		if (separationCount > 0){
 			separationForce.div(separationCount);
-			separationForce.setMag(separationRatio);
+			separationForce.setMag(separationRatio * agent.dna.shootElapsed);
 			separationForce.limit(maxForce);
 			agent.setSpeed(separationForce);					
 
@@ -119,7 +119,7 @@ class Flock extends GameObject {
 		if (cohesionCount > 0){
 			cohesionForce.div(cohesionCount);
 			PVector force = cohesionForce.sub(agent.objectPosition);
-			force.setMag(cohesionRatio);
+			force.setMag(cohesionRatio * agent.dna.turnSpeed);
 			force.limit(maxForce);
 			agent.setSpeed(force);
 			

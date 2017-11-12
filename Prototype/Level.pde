@@ -47,7 +47,7 @@ class Level{
 		objects.add(flock);
 		objects.add(player);
 
-		wave = new Wave(flock, 10, 50, FRAME_RATE * SECONDS_TO_WAVE);
+		wave = new Wave(flock, 50, 200, FRAME_RATE * SECONDS_TO_WAVE);
 		wave.enemyImage = enemyImage;
 	}
 
@@ -93,7 +93,7 @@ class Level{
 		if (flock.agents.size() == 0){
 			waveCurrent++;
 			completed = waveCurrent == waveAmmount;			
-			wave = new Wave(flock, 5, 50, FRAME_RATE * SECONDS_TO_WAVE, wave.sortedDnas);
+			wave = new Wave(flock, 30, 100, FRAME_RATE * SECONDS_TO_WAVE, wave.sortedDnas);
 			wave.enemyImage = enemyImage;
 		}
 	}

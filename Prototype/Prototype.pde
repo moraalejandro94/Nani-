@@ -180,7 +180,9 @@ void checkPlayer(CollidingObject object){
 
 // Se hace la acción de dispararle a un enemigo
 void shootEnemy(Projectile p, Enemy e){
-	e.decreaseHP();
+	if (p.owner instanceof Player){
+		e.decreaseHP();
+	}
 	p.decreaseHP();
 	currentLevel.addToGarbage(p);
 }
