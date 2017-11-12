@@ -138,7 +138,9 @@ class Level{
 	}
 
 	void addRotation(float rotation){
-		x_ofset += (rotation > 0) ? BACKGROUND_MOVE : -BACKGROUND_MOVE;
+		float bgForce = (rotation > 0) ? BACKGROUND_MOVE : -BACKGROUND_MOVE;
+		bgForce *= (player.boosting && player.boostAvailable > 0) ? 4 : 1;
+		x_ofset += bgForce;
 		worldAngle += rotation;
 		if (x_ofset > 0){
 			x_ofset = -width;
