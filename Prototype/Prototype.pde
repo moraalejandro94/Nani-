@@ -12,7 +12,9 @@ float ROTATION_RATE = 0.004;
 int LEVEL_WAVES = 2;
 int PLAYER_HIT_MULTIPLIER = 30 * FRAME_RATE;
 float PARENT_COEFICIENT = 0.10;
+
 PImage gameBg;
+float x_ofset;
 
 int SECONDS_TO_WAVE = 1;
 
@@ -33,10 +35,10 @@ boolean[] keys = new boolean[1024];
 void setup(){
 	frameRate(FRAME_RATE);
 	fullScreen(P2D);
+	background(0);
 	box2dInit();
 	gameInit();
 	colorsInit();
-	background(gameBg);
 }
 
 
@@ -55,8 +57,9 @@ void box2dInit() {
 
 // Inicializa el jugador y los elementos del juego
 void gameInit(){
-	gameBg = loadImage("Images/GameBg.jpg");
-	gameBg.resize(width, height);
+	gameBg = loadImage("Images/GameBg.png");
+	gameBg.resize(0, height);
+	x_ofset = -width*2;
 	player = new Player(width/2, height/2, 40);
 	player.setSpeed(2500);
 	player.boostSpeed = 7500;
@@ -120,9 +123,11 @@ void displayText(String textToShow, float x, float y, color textColor, int textS
 
 
 void draw(){
+	x_ofset = (x_ofset > 0) ? -width *2 : x_ofset + 1;
 	if (currentLevel.levelNumber > 0){
 		if (!pause) {
-			background(gameBg);
+			background(0);
+			image(gameBg, x_ofset + width, height/2);
 			box2d.step();
 			currentLevel.display();
 			currentLevel.update();

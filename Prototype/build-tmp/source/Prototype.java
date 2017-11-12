@@ -32,9 +32,16 @@ public class Prototype extends PApplet {
 
 boolean pause = false;
 char pauseButton = 'p';
-int gameFrame = 60;
+int FRAME_RATE = 60;
 float ROTATION_RATE = 0.004f;
 int LEVEL_WAVES = 2;
+int PLAYER_HIT_MULTIPLIER = 30 * FRAME_RATE;
+float PARENT_COEFICIENT = 0.10f;
+
+PImage gameBg;
+float x_ofset;
+
+int SECONDS_TO_WAVE = 1;
 
 EnemyDna god;
 
@@ -51,7 +58,7 @@ Box2DProcessing box2d;
 boolean[] keys = new boolean[1024];
 
 public void setup(){
-	frameRate(gameFrame);
+	frameRate(FRAME_RATE);
 	
 	background(0);
 	box2dInit();
@@ -75,6 +82,9 @@ public void box2dInit() {
 
 // Inicializa el jugador y los elementos del juego
 public void gameInit(){
+	gameBg = loadImage("Images/GameBg.png");
+	gameBg.resize(0, height);
+	x_ofset = -width*2;
 	player = new Player(width/2, height/2, 40);
 	player.setSpeed(2500);
 	player.boostSpeed = 7500;
@@ -138,9 +148,11 @@ public void displayText(String textToShow, float x, float y, int textColor, int 
 
 
 public void draw(){
+	x_ofset = (x_ofset > 0) ? -width *2 : x_ofset + 1;
 	if (currentLevel.levelNumber > 0){
 		if (!pause) {
 			background(0);
+			image(gameBg, x_ofset + width, height/2);
 			box2d.step();
 			currentLevel.display();
 			currentLevel.update();
@@ -177,6 +189,15 @@ public void beginContact(Contact c) {
 public void checkPlayer(CollidingObject object){
 	if (!player.boosting){
 		player.decreaseHP();
+		if (object instanceof Enemy){
+			((Enemy) object).playerHit();
+		}
+		else if (object instanceof Projectile){
+			Projectile projectile = (Projectile) object;
+			if (projectile.owner instanceof Enemy){
+				((Enemy) projectile.owner).playerHit(); 
+			}
+		}
 	}
 	object.decreaseHP();
 	currentLevel.addToGarbage(object);
@@ -321,8 +342,9 @@ public Vec2 vec2Limit(Vec2 vector, float max){
 	return vector;
 }
 
-public float vec2Heading(Vec2 vector){
-	float angle = atan(vector.y/vector.x);
+public float angleHeading(PVector vector){
+	PVector heading = PVector.sub(getPixelPos(), vector);
+	float angle = heading.heading();
 	return angle;
 
 }
@@ -347,18 +369,54 @@ public void update(){
 }
 class Enemy extends Ship {
 	int score;
+	EnemyDna dna;
+	int c; 
+	float headginAngle;
+
 	Enemy (float x, float y, float mass){
 		super(x,y,mass);
+		headginAngle = 0;
+	}
+
+	public void update(){
+		super.update();
+		dna.lifeElapsed++;
+	}
+
+	public void playerHit(){
+		dna.playerHits ++;		
+	}
+
+	public void generateFitness(){		
+		dna.fitness = dna.lifeElapsed;
+		dna.fitness += dna.playerHits * PLAYER_HIT_MULTIPLIER; 					
+	}
+
+	public void display(){
+		if (inScreen()){
+			Vec2 pos = box2d.getBodyPixelCoord(body);
+			pushMatrix();
+			translate(pos.x, pos.y);
+			imageMode(CENTER);
+			rotate(headginAngle);
+			fill(color(255*dna.speed , 255* dna.turnSpeed, 255*dna.shootElapsed));
+			ellipse(0, 0, mass, mass);
+			if (shipImage != null){
+				image(shipImage, 0, 0, mass, mass);
+			}
+			popMatrix();
+		}
 	}
 }
-class EnemyDna{
+class EnemyDna {
 	float speed;
 	float turnSpeed;
 	float shootElapsed;
 	float mass;
 	float fitness;
-
+	int lifeElapsed;
 	int score;
+	int playerHits; 
 
 	EnemyDna(float speed, float turnSpeed, float shootElapsed){
 		this.speed = speed;
@@ -366,6 +424,8 @@ class EnemyDna{
 		this.shootElapsed = shootElapsed;
 		this.mass = mass;
 		fitness = 0;
+		lifeElapsed = 0;
+		playerHits = 0;
 		score = getScore();
 	}
 
@@ -575,7 +635,7 @@ class Level{
 		objects.add(flock);
 		objects.add(player);
 
-		wave = new Wave(flock, 10, 50, gameFrame * 6);
+		wave = new Wave(flock, 10, 50, FRAME_RATE * SECONDS_TO_WAVE);
 		wave.enemyImage = enemyImage;
 	}
 
@@ -613,15 +673,15 @@ class Level{
 	}
 
 	public int secondsToWave(){
-		return wave.startElapse / gameFrame;
+		return wave.startElapse / FRAME_RATE;
 	}
 
 	public void nextWave(){
 		// Caca genetica
 		if (flock.agents.size() == 0){
 			waveCurrent++;
-			completed = waveCurrent == waveAmmount;
-			wave = new Wave(flock, 5, 50, gameFrame * 6);
+			completed = waveCurrent == waveAmmount;			
+			wave = new Wave(flock, 5, 50, FRAME_RATE * SECONDS_TO_WAVE, wave.sortedDnas);
 			wave.enemyImage = enemyImage;
 		}
 	}
@@ -630,6 +690,11 @@ class Level{
 	public void addToGarbage(GameObject object){
 		if (object.dead){
 			garbage.add(object);
+			if (object instanceof Enemy){
+				Enemy e = (Enemy) object;				
+				e.generateFitness();
+				wave.insertIntoSortedDNAS(e.dna);
+			}
 		}
 	}
 
@@ -1080,7 +1145,7 @@ class Player extends Ship implements UserInput{
 	}
 
 	public void shootProjectile(){
-		if(elapsed > shotSpeed){
+		if(elapsed > shotSpeed && !boosting){
 			Vec2 pos = box2d.getBodyPixelCoord(body);
 			Vec2 bulletPos = new Vec2(pos.x + mass, pos.y - mass / 1.5f);
 			Vec2 bulletForce = new Vec2(projectileForce.x, projectileForce.y);
@@ -1163,7 +1228,6 @@ class Projectile extends CollidingObject{
 
 	public void display(){
 		Vec2 pos = box2d.getBodyPixelCoord(body);
-		float a = vec2Heading(getPos());
 		strokeWeight(2);
 		fill(0,0,255);
 		pushMatrix();
@@ -1215,7 +1279,9 @@ class Seeker extends Enemy {
 
 	public void update(){
 		super.update();
-		seek(player.getPixelPos());
+		PVector playerPos = player.getPixelPos();
+		headginAngle = angleHeading(playerPos);
+		seek(playerPos);
 		elapsed++;
 		shootProjectile();
 	}
@@ -1226,7 +1292,11 @@ class Seeker extends Enemy {
 			Vec2 pos = box2d.getBodyPixelCoord(body);
 			Vec2 bulletPos = new Vec2(pos.x - mass, pos.y );
 			Vec2 bulletForce = new Vec2(-projectileForce.x, projectileForce.y);
-			elapsed = 0;			
+			elapsed = 0;
+			if (pos.x < player.getPixelPos().x){
+				bulletPos.x += mass*2;
+				bulletForce.x *= -1;
+			}			
 			Projectile p = new Projectile(bulletPos.x, bulletPos.y, projectileMass, bulletForce, this);
 			projectiles.add(p); 		 
 		}
@@ -1260,21 +1330,7 @@ class Ship extends CollidingObject{
 
 	public void update(){
 		super.update();
-	}
-
-	public void display(){
-		if (inScreen()){
-			Vec2 pos = box2d.getBodyPixelCoord(body);
-			pushMatrix();
-			translate(pos.x, pos.y);
-			fill(255,255,255);
-			ellipse(0, 0, mass, mass);
-			if (shipImage != null){
-				image(shipImage, 0, 0, mass, mass);
-			}
-			popMatrix();
-		}
-	}
+	}	
 
 	public void shootProjectile(){
 		if(elapsed > shotSpeed){
@@ -1311,6 +1367,11 @@ class Wave{
 	int costGlobal;
 	int costUsed;
 
+	int iParent;
+	int jParent;
+	int maxChilds;
+	int lowestParent;
+
 	float multiplierGod;
 	float multiplierLevel;
 
@@ -1318,6 +1379,7 @@ class Wave{
 	boolean cleared;
 
 	ArrayList<EnemyDna> dnas;
+	ArrayList<EnemyDna> sortedDnas;
 	int startElapse;
 	int currEnemy;
 
@@ -1346,6 +1408,7 @@ class Wave{
 	public void createDna(){
 		int currCost = 0;
 		dnas = new ArrayList();
+		sortedDnas = new ArrayList();
 		while(currCost < costGlobal){
 			float speedPercent = random(0, 1);
 			float turnPercent = random( 0, 1-speedPercent);
@@ -1360,17 +1423,51 @@ class Wave{
 
 	public void createDna(ArrayList<EnemyDna> oldDna){
 		int currCost = 0;
-		while(currCost < costGlobal){
-			float speedPercent = random(0, 1);
-			float turnPercent = random( 0, 1-speedPercent);
-			float fireRate = 1 - (speedPercent + turnPercent);
-			EnemyDna dna = new EnemyDna(speedPercent, turnPercent , fireRate);
-			dnas.add(dna);
-			int score = dna.score;
+		dnas = new ArrayList();
+		sortedDnas = new ArrayList();
+
+		iParent = 0;
+		jParent = iParent + 1;
+		maxChilds = PApplet.parseInt(costGlobal / 10);
+		lowestParent = PApplet.parseInt(maxChilds * PARENT_COEFICIENT) + 1;
+		
+		while(currCost < costGlobal){			
+			EnemyDna parent1 = oldDna.get(iParent);
+			EnemyDna parent2 = oldDna.get(jParent);
+
+			EnemyDna child = combine(parent1, parent2);
+			dnas.add(child);
+
+			int score = child.score;
 			currCost += score;
+
+			nextParentSelection(oldDna.size());
 		}
 		this.costGlobal = currCost;
 		
+	}
+
+	public EnemyDna combine(EnemyDna parent1, EnemyDna parent2){
+		float parent1Percent = random(0.420f, 0.69f);
+		float parent2Percent = 1 - parent1Percent;		
+		float childSpeed = parent1Percent*parent1.speed + parent2Percent * parent2.speed;
+		float childTurnSpeed = parent1Percent*parent1.turnSpeed + parent2Percent * parent2.turnSpeed;
+		float childShootElapsed = parent1Percent * parent1.shootElapsed + parent2Percent * parent2.shootElapsed;
+		EnemyDna child = new EnemyDna(childSpeed, childTurnSpeed, childShootElapsed);
+		return child;
+	}
+
+	public void nextParentSelection(int size){
+		jParent++;
+		if (jParent == lowestParent || jParent >= size){
+			iParent++;
+			jParent = iParent + 1;
+		}
+		if (iParent == lowestParent || iParent >= size){
+			iParent = 0;
+			jParent = iParent + 1;
+		}
+
 	}
 
 	public void update(){
@@ -1378,6 +1475,7 @@ class Wave{
 			EnemyDna currDna = dnas.get(currEnemy);
 			Seeker s = new Seeker(width, random(0, height) ,currDna.turnSpeed * god.turnSpeed, currDna.speed * god.speed, (int)( (god.shootElapsed / currDna.shootElapsed) ));			
 			currEnemy ++;			
+			s.dna = currDna;
 			s.score = currDna.getScore();
 			s.shipImage = enemyImage;
 			flock.addEnemy(s);
@@ -1392,6 +1490,21 @@ class Wave{
 			totalScore += e.score;
 		}
 		return totalScore;
+	}
+
+	public void insertIntoSortedDNAS(EnemyDna dna){
+		int index = getIndex(dna);		
+		sortedDnas.add(index, dna);
+	}
+
+	public int getIndex(EnemyDna dna){
+		for (int i = 0 ; i < sortedDnas.size(); i++){
+			if (dna.fitness >= dnas.get(i).fitness){
+				sortedDnas.add(i, dna);
+				return i;				
+			}
+		}
+		return sortedDnas.size();
 	}
 }
   public void settings() { 	fullScreen(P2D); }
