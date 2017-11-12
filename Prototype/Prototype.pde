@@ -13,6 +13,7 @@ int LEVEL_WAVES = 2;
 int PLAYER_HIT_MULTIPLIER = 30 * FRAME_RATE;
 float PARENT_COEFICIENT = 0.10;
 
+float BACKGROUND_MOVE = 1;
 PImage gameBg;
 float x_ofset;
 
@@ -59,7 +60,7 @@ void box2dInit() {
 void gameInit(){
 	gameBg = loadImage("Images/GameBg.png");
 	gameBg.resize(0, height);
-	x_ofset = -width*2;
+	x_ofset = -width;
 	player = new Player(width/2, height/2, 40);
 	player.setSpeed(2500);
 	player.boostSpeed = 7500;
@@ -123,7 +124,6 @@ void displayText(String textToShow, float x, float y, color textColor, int textS
 
 
 void draw(){
-	x_ofset = (x_ofset > 0) ? -width *2 : x_ofset + 1;
 	if (currentLevel.levelNumber > 0){
 		if (!pause) {
 			background(0);

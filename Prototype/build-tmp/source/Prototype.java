@@ -38,6 +38,7 @@ int LEVEL_WAVES = 2;
 int PLAYER_HIT_MULTIPLIER = 30 * FRAME_RATE;
 float PARENT_COEFICIENT = 0.10f;
 
+float BACKGROUND_MOVE = 1;
 PImage gameBg;
 float x_ofset;
 
@@ -84,7 +85,7 @@ public void box2dInit() {
 public void gameInit(){
 	gameBg = loadImage("Images/GameBg.png");
 	gameBg.resize(0, height);
-	x_ofset = -width*2;
+	x_ofset = -width;
 	player = new Player(width/2, height/2, 40);
 	player.setSpeed(2500);
 	player.boostSpeed = 7500;
@@ -148,7 +149,6 @@ public void displayText(String textToShow, float x, float y, int textColor, int 
 
 
 public void draw(){
-	x_ofset = (x_ofset > 0) ? -width *2 : x_ofset + 1;
 	if (currentLevel.levelNumber > 0){
 		if (!pause) {
 			background(0);
@@ -205,7 +205,9 @@ public void checkPlayer(CollidingObject object){
 
 // Se hace la acci\u00f3n de dispararle a un enemigo
 public void shootEnemy(Projectile p, Enemy e){
-	e.decreaseHP();
+	if (p.owner instanceof Player){
+		e.decreaseHP();
+	}
 	p.decreaseHP();
 	currentLevel.addToGarbage(p);
 }
@@ -533,7 +535,7 @@ class Flock extends GameObject {
 	public void applyAlign(Enemy agent){
 		if (alignCount > 0){
 			alignForce.div(alignCount);
-			alignForce.setMag(alignRatio);
+			alignForce.setMag(alignRatio * agent.dna.speed);
 			alignForce.limit(maxForce);
 			agent.setSpeed(alignForce);
 			
@@ -543,7 +545,7 @@ class Flock extends GameObject {
 	public void applySeparation(Enemy agent){
 		if (separationCount > 0){
 			separationForce.div(separationCount);
-			separationForce.setMag(separationRatio);
+			separationForce.setMag(separationRatio * agent.dna.shootElapsed);
 			separationForce.limit(maxForce);
 			agent.setSpeed(separationForce);					
 
@@ -554,7 +556,7 @@ class Flock extends GameObject {
 		if (cohesionCount > 0){
 			cohesionForce.div(cohesionCount);
 			PVector force = cohesionForce.sub(agent.objectPosition);
-			force.setMag(cohesionRatio);
+			force.setMag(cohesionRatio * agent.dna.turnSpeed);
 			force.limit(maxForce);
 			agent.setSpeed(force);
 			
@@ -635,7 +637,7 @@ class Level{
 		objects.add(flock);
 		objects.add(player);
 
-		wave = new Wave(flock, 10, 50, FRAME_RATE * SECONDS_TO_WAVE);
+		wave = new Wave(flock, 50, 200, FRAME_RATE * SECONDS_TO_WAVE);
 		wave.enemyImage = enemyImage;
 	}
 
@@ -681,7 +683,7 @@ class Level{
 		if (flock.agents.size() == 0){
 			waveCurrent++;
 			completed = waveCurrent == waveAmmount;			
-			wave = new Wave(flock, 5, 50, FRAME_RATE * SECONDS_TO_WAVE, wave.sortedDnas);
+			wave = new Wave(flock, 30, 100, FRAME_RATE * SECONDS_TO_WAVE, wave.sortedDnas);
 			wave.enemyImage = enemyImage;
 		}
 	}
@@ -726,7 +728,13 @@ class Level{
 	}
 
 	public void addRotation(float rotation){
+		x_ofset += (rotation > 0) ? BACKGROUND_MOVE : -BACKGROUND_MOVE;
 		worldAngle += rotation;
+		if (x_ofset > 0){
+			x_ofset = -width;
+		}else if (x_ofset < -width *2){
+			x_ofset = -width;
+		}
 	}
 
 

@@ -138,7 +138,13 @@ class Level{
 	}
 
 	void addRotation(float rotation){
+		x_ofset += (rotation > 0) ? BACKGROUND_MOVE : -BACKGROUND_MOVE;
 		worldAngle += rotation;
+		if (x_ofset > 0){
+			x_ofset = -width;
+		}else if (x_ofset < -width *2){
+			x_ofset = -width;
+		}
 	}
 
 
