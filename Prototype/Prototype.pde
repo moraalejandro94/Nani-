@@ -9,10 +9,15 @@ boolean pause = false;
 char pauseButton = 'p';
 int gameFrame = 60;
 float ROTATION_RATE = 0.004;
+int LEVEL_WAVES = 2;
 
 EnemyDna god;
 
 Level currentLevel;
+
+Menu menu;
+int currentSkin = 1;
+int maxSkins = 6;
 
 color pointsColor;
 
@@ -47,9 +52,10 @@ void box2dInit() {
 void gameInit(){
 	player = new Player(width/2, height/2, 40);
 	player.normalSpeed = 2500;
-	player.shipImage = loadImage("Images/player.png");
+	player.shipImage = loadImage("Images/Skins/" + Integer.toString(currentSkin) + ".png");
 	god = new EnemyDna(4200, 100, 25);
-	currentLevel = new Level(player, 2, 1);
+	currentLevel = new Level(player, LEVEL_WAVES, 0);
+	menu = new Menu();
 }
 
 // Muestra los elementos del juego pero no los actualiza y muestra el menú de pausa
@@ -100,16 +106,19 @@ void displayText(String textToShow, float x, float y, color textColor, int textS
 
 
 void draw(){
-
-	if (!pause) {
-		background(0);
-		box2d.step();
-		currentLevel.display();
-		currentLevel.update();
+	if (currentLevel.levelNumber > 0){
+		if (!pause) {
+			background(0);
+			box2d.step();
+			currentLevel.display();
+			currentLevel.update();
+		}else{
+			displayPause();
+		}
+		displayStats();
 	}else{
-		displayPause();
+		menu.showMenu();
 	}
-	displayStats();
 }
 
 // Obtenemos el objecto a partir del fixture
