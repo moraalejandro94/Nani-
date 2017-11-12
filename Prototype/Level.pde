@@ -29,8 +29,10 @@ class Level{
 		completed = false;
 
 		worldAngle = 0;
-		worldImage = loadImage(mediaPath + "/bg.png");
-		enemyImage = loadImage(mediaPath + "/enemy.png");
+		if (levelNumber > 0){
+			worldImage = loadImage(mediaPath + "/bg.png");
+			enemyImage = loadImage(mediaPath + "/enemy.png");
+		}
 
 		objects = new ArrayList();
 		garbage = new ArrayList();
@@ -46,11 +48,13 @@ class Level{
 
 
 	void display(){
-		garbageCollector();
-		displayBackground();
-		for(GameObject o : objects){
-			o.update();
-			o.display();
+		if (levelNumber > 0){
+			garbageCollector();
+			displayBackground();
+			for(GameObject o : objects){
+				o.update();
+				o.display();
+			}	
 		}
 	}
 
@@ -60,7 +64,7 @@ class Level{
 
 	// Actualiza los elementos del juego
 	void update(){
-		if (!completed){
+		if (!completed && levelNumber > 0){
 			updateLevel();
 		}
 	}
@@ -130,12 +134,14 @@ class Level{
 
 	// Muestra y rota los elementos del fondo
 	void displayBackground(){
-		pushMatrix();
-		translate(width/2, height + width/1.8);
-		imageMode(CENTER);
-		rotate(worldAngle);
-		image(worldImage, 0, 0, width * 1.5, width * 1.5);
-		popMatrix();
+		if (levelNumber > 0){
+			pushMatrix();
+			translate(width/2, height + width/1.8);
+			imageMode(CENTER);
+			rotate(worldAngle);
+			image(worldImage, 0, 0, width * 1.5, width * 1.5);
+			popMatrix();
+		}
 
 	}
 }
