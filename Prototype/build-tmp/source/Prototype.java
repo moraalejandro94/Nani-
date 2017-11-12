@@ -567,8 +567,10 @@ class Level{
 		worldDirection = new PVector(0, 0);
 		flock = new Flock(player, 500);
 
-		ParticleSystem particleSystem = new ParticleSystem(player.getPixelPos().x, player.getPixelPos().y);
-		objects.add(particleSystem);
+		ParticleSystem playerFire = new ParticleSystem(2);
+		ParticleSystem playerFire2 = new ParticleSystem(10);
+		objects.add(playerFire);
+		objects.add(playerFire2);
 
 		objects.add(flock);
 		objects.add(player);
@@ -766,67 +768,76 @@ public int getOppositeDirection(int direction){
   return 0;
 }
 class Particle extends GameObject{
-  PVector speed,acc;
-  float mass, friction, lifeSpan, decay;
-  float maxSpeed;
-  boolean seekPlayer;
+	PVector speed,acc;
+	float mass, friction, lifeSpan, decay;
+	float maxSpeed;
+	boolean seekPlayer;
 
-  Particle(float x, float y, float mass){
-    super(x, y, mass);
-    this.speed = new PVector(0,0);
-    this.acc = new PVector(0,0);
-    this.mass = mass;
-    this.maxSpeed = random(1, 10);
-    this.decay = 0.5f;
-    this.lifeSpan = 255;
-  }
+	Particle(float x, float y, float mass){
+		super(x, y, mass);
+		this.speed = new PVector(0,0);
+		this.acc = new PVector(0,0);
+		this.mass = mass;
+		this.maxSpeed = random(1, 10);
+		this.decay = (seekPlayer) ? 0.5f : 2;
+		this.lifeSpan = (seekPlayer) ? 255 : 100;
+	}
 
-  public void display(){
-    noStroke();
-    fill(pointsColor,lifeSpan);
-    ellipse(objectPosition.x, objectPosition.y, mass, mass);
-  }
+	public void display(){
+		noStroke();
+		float pmass = mass;
+		if (seekPlayer){
+			fill(pointsColor,lifeSpan);
+		}else{
+			fill(255, 0, 0,lifeSpan);
+			if(player.boosting && player.boostAvailable > 0){
+				fill(0, 0, 255,lifeSpan);
+				pmass = mass * 2;
+			}
+		}
+		ellipse(objectPosition.x, objectPosition.y, pmass, pmass);
+	}
 
-  public void update(){
-    speed.add(acc);
-    objectPosition.add(speed);
-    acc.mult(0);
-    lifeSpan -= decay;
-    if (seekPlayer){
-      seekPlayer();
-    }
-  }
+	public void update(){
+		speed.add(acc);
+		objectPosition.add(speed);
+		acc.mult(0);
+		lifeSpan -= decay;
+		if (seekPlayer){
+			seekPlayer();
+		}
+	}
 
-  public void seekPlayer(){
-    PVector randy = PVector.random2D();
-    randy.setMag(random(player.mass));
-    PVector pos = player.getPixelPos().add(randy);
-    seek(pos);
-  }
+	public void seekPlayer(){
+		PVector randy = PVector.random2D();
+		randy.setMag(random(player.mass));
+		PVector pos = player.getPixelPos().add(randy);
+		seek(pos);
+	}
 
-  public void applyForce(PVector force){
-    PVector f = PVector.div(force,mass);
-    acc.add(f);
-  }
+	public void applyForce(PVector force){
+		PVector f = PVector.div(force,mass);
+		acc.add(f);
+	}
 
-  public boolean isDead(){
-    return lifeSpan <= 0;
-  }
+	public boolean isDead(){
+		return lifeSpan <= 0;
+	}
 
-  public boolean near(CollidingObject target){
-    float distance = PVector.dist(objectPosition, target.getPixelPos());
-    return distance < target.mass / 2;
-  }
+	public boolean near(CollidingObject target){
+		float distance = PVector.dist(objectPosition, target.getPixelPos());
+		return distance < target.mass / 2;
+	}
 
-  public void seek(PVector target) {
-    PVector desired = PVector.sub(target, objectPosition);
-    desired.setMag(maxSpeed);
-    PVector steering = PVector.sub(desired, speed);
-    steering.limit(maxSpeed);
-    applyForce(steering);
-  }
+	public void seek(PVector target) {
+		PVector desired = PVector.sub(target, objectPosition);
+		desired.setMag(maxSpeed);
+		PVector steering = PVector.sub(desired, speed);
+		steering.limit(maxSpeed);
+		applyForce(steering);
+	}
 
-  public void kill(){}
+	public void kill(){}
 }
 
 
@@ -836,6 +847,8 @@ class ParticleSystem extends GameObject{
 	LinkedList<Particle> particles;
 	int maxParticles, current;
 	boolean seekPlayer;
+
+	float offsetY;
 	PVector force;
 
 	ParticleSystem(float x, float y, int maxParticles){
@@ -847,20 +860,43 @@ class ParticleSystem extends GameObject{
 		current = 0;
 	}
 
-	ParticleSystem(float x, float y){
-		super(x, y, 0);
-		origin = new PVector(x, y);
+	ParticleSystem(float offsetY){
+		super(0, 0, 0);
+		origin = new PVector(getPositionX(), getPositionY());
 		particles = new LinkedList();
 		this.maxParticles = maxParticles;
 		seekPlayer = false;
-		force = new PVector(-player.normalSpeed / 1000, 0);
+		force = new PVector(0, 0);
+		this.offsetY = offsetY;
 		current = 0;
+	}
+
+	public float getPositionX(){
+		if (player.facingForward){
+			return player.getPixelPos().x - 30;
+		}
+		return player.getPixelPos().x + 30;
+	}
+
+	public float getPositionY(){
+		return player.getPixelPos().y + offsetY;
+	}
+
+	public float getForceX(){
+		float speedForce = (player.boosting && player.boostAvailable > 0) ? player.boostSpeed : player.normalSpeed;
+		if (player.facingForward){
+			return -speedForce / 10000;
+		}
+		return speedForce / 10000;
 	}
 
 	public void update(){
 		if(!seekPlayer){
 			addParticle();
 			applyForce(force);
+			origin.x = getPositionX();
+			origin.y = getPositionY();
+			force.x = getForceX();
 		}
 		if (current < maxParticles && seekPlayer){
 			addParticle();
@@ -889,7 +925,7 @@ class ParticleSystem extends GameObject{
 	}
 
 	public void addParticle(){
-		float mass = abs(randomGaussian())*3 + 5;
+		float mass = (seekPlayer) ? abs(randomGaussian())*3 + 5 : abs(randomGaussian())*3 + 2;
 		Particle p = new Particle(origin.x, origin.y, mass);
 		p.seekPlayer = seekPlayer;
 		PVector dir = PVector.random2D();
@@ -955,7 +991,7 @@ class Player extends Ship implements UserInput{
 	public void move(int direction) {
 		speed.normalize();
 		speed.add(getDirectionVector(direction));
-		if (boosting){
+		if (boosting){			
 			speed.setMag(boostSpeed);	
 		}
 		else{
@@ -967,8 +1003,8 @@ class Player extends Ship implements UserInput{
 
 	public void moveUp() {
 		if (keys[moveUp]) {
-			if (getPixelPos().y > mass){
-				move(UP);
+			if (getPixelPos().y > mass && !boosting){				
+				move(UP);				
 			}
 		}
 	}
@@ -1010,7 +1046,7 @@ class Player extends Ship implements UserInput{
 
 	public void moveDown() {
 		if (keys[moveDown]) {
-			if (getPixelPos().y < height - mass){
+			if (getPixelPos().y < height - mass && !boosting){
 				move(DOWN);
 			}
 		}

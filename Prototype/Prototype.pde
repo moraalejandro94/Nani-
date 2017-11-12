@@ -22,7 +22,6 @@ int maxSkins = 6;
 color pointsColor;
 
 Player player;
-ParticleSystem playerFire;
 Box2DProcessing box2d;
 boolean[] keys = new boolean[1024];
 

@@ -6,6 +6,8 @@ class ParticleSystem extends GameObject{
 	LinkedList<Particle> particles;
 	int maxParticles, current;
 	boolean seekPlayer;
+
+	float offsetY;
 	PVector force;
 
 	ParticleSystem(float x, float y, int maxParticles){
@@ -17,20 +19,43 @@ class ParticleSystem extends GameObject{
 		current = 0;
 	}
 
-	ParticleSystem(float x, float y){
-		super(x, y, 0);
-		origin = new PVector(x, y);
+	ParticleSystem(float offsetY){
+		super(0, 0, 0);
+		origin = new PVector(getPositionX(), getPositionY());
 		particles = new LinkedList();
 		this.maxParticles = maxParticles;
 		seekPlayer = false;
-		force = new PVector(-player.normalSpeed / 1000, 0);
+		force = new PVector(0, 0);
+		this.offsetY = offsetY;
 		current = 0;
+	}
+
+	float getPositionX(){
+		if (player.facingForward){
+			return player.getPixelPos().x - 30;
+		}
+		return player.getPixelPos().x + 30;
+	}
+
+	float getPositionY(){
+		return player.getPixelPos().y + offsetY;
+	}
+
+	float getForceX(){
+		float speedForce = (player.boosting && player.boostAvailable > 0) ? player.boostSpeed : player.normalSpeed;
+		if (player.facingForward){
+			return -speedForce / 10000;
+		}
+		return speedForce / 10000;
 	}
 
 	void update(){
 		if(!seekPlayer){
 			addParticle();
 			applyForce(force);
+			origin.x = getPositionX();
+			origin.y = getPositionY();
+			force.x = getForceX();
 		}
 		if (current < maxParticles && seekPlayer){
 			addParticle();
@@ -59,7 +84,7 @@ class ParticleSystem extends GameObject{
 	}
 
 	void addParticle(){
-		float mass = abs(randomGaussian())*3 + 5;
+		float mass = (seekPlayer) ? abs(randomGaussian())*3 + 5 : abs(randomGaussian())*3 + 2;
 		Particle p = new Particle(origin.x, origin.y, mass);
 		p.seekPlayer = seekPlayer;
 		PVector dir = PVector.random2D();
