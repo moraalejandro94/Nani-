@@ -2,6 +2,7 @@ class Particle extends GameObject{
   PVector speed,acc;
   float mass, friction, lifeSpan, decay;
   float maxSpeed;
+  boolean seekPlayer;
 
   Particle(float x, float y, float mass){
     super(x, y, mass);
@@ -24,15 +25,17 @@ class Particle extends GameObject{
     objectPosition.add(speed);
     acc.mult(0);
     lifeSpan -= decay;
-    seekPlayer();
+    if (seekPlayer){
+      seekPlayer();
+    }
   }
 
-void seekPlayer(){
-  PVector randy = PVector.random2D();
-  randy.setMag(random(player.mass));
-  PVector pos = player.getPixelPos().add(randy);
-  seek(pos);
-}
+  void seekPlayer(){
+    PVector randy = PVector.random2D();
+    randy.setMag(random(player.mass));
+    PVector pos = player.getPixelPos().add(randy);
+    seek(pos);
+  }
 
   void applyForce(PVector force){
     PVector f = PVector.div(force,mass);

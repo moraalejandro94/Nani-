@@ -567,6 +567,9 @@ class Level{
 		worldDirection = new PVector(0, 0);
 		flock = new Flock(player, 500);
 
+		ParticleSystem particleSystem = new ParticleSystem(player.getPixelPos().x, player.getPixelPos().y);
+		objects.add(particleSystem);
+
 		objects.add(flock);
 		objects.add(player);
 
@@ -766,6 +769,7 @@ class Particle extends GameObject{
   PVector speed,acc;
   float mass, friction, lifeSpan, decay;
   float maxSpeed;
+  boolean seekPlayer;
 
   Particle(float x, float y, float mass){
     super(x, y, mass);
@@ -788,15 +792,17 @@ class Particle extends GameObject{
     objectPosition.add(speed);
     acc.mult(0);
     lifeSpan -= decay;
-    seekPlayer();
+    if (seekPlayer){
+      seekPlayer();
+    }
   }
 
-public void seekPlayer(){
-  PVector randy = PVector.random2D();
-  randy.setMag(random(player.mass));
-  PVector pos = player.getPixelPos().add(randy);
-  seek(pos);
-}
+  public void seekPlayer(){
+    PVector randy = PVector.random2D();
+    randy.setMag(random(player.mass));
+    PVector pos = player.getPixelPos().add(randy);
+    seek(pos);
+  }
 
   public void applyForce(PVector force){
     PVector f = PVector.div(force,mass);
@@ -829,17 +835,34 @@ class ParticleSystem extends GameObject{
 	PVector origin;
 	LinkedList<Particle> particles;
 	int maxParticles, current;
+	boolean seekPlayer;
+	PVector force;
 
 	ParticleSystem(float x, float y, int maxParticles){
 		super(x, y, 0);
 		origin = new PVector(x, y);
 		particles = new LinkedList();
 		this.maxParticles = maxParticles;
+		seekPlayer = true;
+		current = 0;
+	}
+
+	ParticleSystem(float x, float y){
+		super(x, y, 0);
+		origin = new PVector(x, y);
+		particles = new LinkedList();
+		this.maxParticles = maxParticles;
+		seekPlayer = false;
+		force = new PVector(-player.normalSpeed / 1000, 0);
 		current = 0;
 	}
 
 	public void update(){
-		if (current < maxParticles){
+		if(!seekPlayer){
+			addParticle();
+			applyForce(force);
+		}
+		if (current < maxParticles && seekPlayer){
 			addParticle();
 			current++;
 		}
@@ -868,6 +891,7 @@ class ParticleSystem extends GameObject{
 	public void addParticle(){
 		float mass = abs(randomGaussian())*3 + 5;
 		Particle p = new Particle(origin.x, origin.y, mass);
+		p.seekPlayer = seekPlayer;
 		PVector dir = PVector.random2D();
 		dir.setMag(randomGaussian()*1 + 1);
 		p.applyForce(dir);

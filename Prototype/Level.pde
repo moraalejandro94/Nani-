@@ -39,6 +39,9 @@ class Level{
 		worldDirection = new PVector(0, 0);
 		flock = new Flock(player, 500);
 
+		playerFire = new ParticleSystem(player.getPixelPos().x, player.getPixelPos().y);
+		objects.add(playerFire);
+
 		objects.add(flock);
 		objects.add(player);
 
