@@ -6,6 +6,7 @@ interface UserInput{
 	char faceLeft = 'K';
 	char faceRight = 'L';
 	char shoot = ' ';
+	char boost ='Q'; 
 
 	public void movementController();
 	public void moveUp();
@@ -15,4 +16,5 @@ interface UserInput{
 	public void faceRight();
 	public void faceLeft();
 	public void shoot();
+	public void boost();
 }

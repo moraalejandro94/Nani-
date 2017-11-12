@@ -17,7 +17,7 @@ PVector getDirectionVector(int direction){
     case UP:
     return up;
     case DOWN:
-    return down;
+    return down;    
   }
   return nullMove;
 }

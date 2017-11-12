@@ -2,6 +2,9 @@ class Player extends Ship implements UserInput{
 	int score, recoveringElapsed, recoveryTime, blinkElapsed, blinkTime;
 	boolean recovering = false;
 	boolean display = true;
+	boolean boosting; 
+	int boostTime, boostAvailable, boostRecharge, boostRechargeElapsed;	
+
 
 	Player(float x, float y, float mass){
 		super(x, y, mass);
@@ -10,10 +13,28 @@ class Player extends Ship implements UserInput{
 		recoveryTime = 120;
 		blinkElapsed = 0;
 		blinkTime = 15;
+		boosting = false;
+		boostTime = 300;
+		boostAvailable =  300; 
+		boostRecharge  = 60;
+		boostRechargeElapsed = 0;
+	}
+
+	void setSpeed(int speed){
+		this.normalSpeed =  speed;
 	}
 
 	void update(){
 		movementController();
+		if (boosting && boostAvailable != 0){			
+			boostAvailable--;
+		}
+		if (!boosting && boostAvailable <= boostTime){
+			boostRechargeElapsed ++;
+			if (boostRechargeElapsed >= boostRecharge){
+				boostAvailable++;
+			}
+		}
 		super.update();
 	}
 
@@ -30,7 +51,12 @@ class Player extends Ship implements UserInput{
 	void move(int direction) {
 		speed.normalize();
 		speed.add(getDirectionVector(direction));
-		speed.setMag(normalSpeed);
+		if (boosting){
+			speed.setMag(boostSpeed);	
+		}
+		else{
+			speed.setMag(normalSpeed);			
+		}
 		currentLevel.screenController(speed.x);
 		setSpeed(speed);
 	}
@@ -42,28 +68,36 @@ class Player extends Ship implements UserInput{
 	}
 
 	void moveLeft() {
-		if (keys[moveLeft]) {
-			move(LEFT);
-			currentLevel.addRotation(ROTATION_RATE);
+		if (keys[moveLeft]) {			
+			if(!boosting){						
+				move(LEFT);	
+				currentLevel.addRotation(ROTATION_RATE);
+			}
 		}
 	}
 
 	void moveRight() {
 		if (keys[moveRight]) {
-			move(RIGHT);     
-			currentLevel.addRotation(-ROTATION_RATE);
+			if(!boosting){									
+				currentLevel.addRotation(-ROTATION_RATE);
+				move(RIGHT);     
+			}
 		}
 	}
 	void faceRight(){
 		if(keys[faceRight]){
-			facingForward = true;
+			if (!boosting){			
+				facingForward = true;
+			}
 		}
 	}
 
 
 	void faceLeft(){
 		if(keys[faceLeft]){
-			facingForward = false;
+			if (!boosting){
+				facingForward = false;
+			}
 		}
 	}
 
@@ -80,6 +114,26 @@ class Player extends Ship implements UserInput{
 		}
 	}
 
+
+	void boost(){		
+		if (keys[boost]){			
+			boosting = true;	
+			if (boostAvailable > 0){	
+				boostRechargeElapsed = 0;			
+				if (facingForward){
+					move(RIGHT);
+					currentLevel.addRotation(-ROTATION_RATE * (boostSpeed/normalSpeed));
+				}
+				else {
+					move(LEFT);
+					currentLevel.addRotation(ROTATION_RATE * (boostSpeed/normalSpeed));	
+				}
+			}		
+		}
+		else{			
+			boosting = false; 			
+		}
+	}
 
 	void shootProjectile(){
 		if(elapsed > shotSpeed){
@@ -104,6 +158,7 @@ class Player extends Ship implements UserInput{
 		faceLeft();
 		faceRight();
 		shoot();
+		boost();
 		elapsed++;
 		blinkElapsed ++;
 		recoveringElapsed++;
