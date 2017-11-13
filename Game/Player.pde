@@ -3,6 +3,7 @@ class Player extends Ship implements UserInput{
 	boolean recovering = false;
 	boolean display = true;
 	boolean boosting; 
+	boolean cutScene;
 	int boostTime, boostAvailable, boostRecharge, boostRechargeElapsed;	
 
 
@@ -18,6 +19,8 @@ class Player extends Ship implements UserInput{
 		boostAvailable =  300; 
 		boostRecharge  = 60;
 		boostRechargeElapsed = 0;
+
+		cutScene = false;
 	}
 
 	void setSpeed(int speed){
@@ -36,6 +39,15 @@ class Player extends Ship implements UserInput{
 			}
 		}
 		super.update();
+	}
+
+	void moveToPoint(PVector target) {
+		PVector desired = PVector.sub(target, getPixelPos());
+		desired.setMag(normalSpeed * 0.5);
+		PVector steering = PVector.sub(desired, speed);
+		steering.limit(normalSpeed * 0.5);
+		steering.y *= -1;	
+		setSpeed(steering);
 	}
 
 	void decreaseHP(){
@@ -63,7 +75,7 @@ class Player extends Ship implements UserInput{
 
 	void moveUp() {
 		if (keys[moveUp]) {
-			if (getPixelPos().y > mass && !boosting){				
+			if (getPixelPos().y > mass && !boosting && !cutScene){
 				move(UP);				
 			}
 		}
@@ -106,7 +118,7 @@ class Player extends Ship implements UserInput{
 
 	void moveDown() {
 		if (keys[moveDown]) {
-			if (getPixelPos().y < height - mass && !boosting){
+			if (getPixelPos().y < height - mass && !boosting && !cutScene){
 				move(DOWN);
 			}
 		}

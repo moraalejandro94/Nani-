@@ -9,9 +9,14 @@ boolean pause = false;
 char pauseButton = 'p';
 int FRAME_RATE = 60;
 float ROTATION_RATE = 0.004;
-int LEVEL_WAVES = 0;
+int LEVEL_WAVES = 1;
 int PLAYER_HIT_MULTIPLIER = 30 * FRAME_RATE;
 float PARENT_COEFICIENT = 0.10;
+int GAME_LEVELS = 1;
+boolean GAME_OVER = false;
+boolean GAME_WON = false;
+
+PImage gameWon;
 
 float BACKGROUND_MOVE = 1;
 PImage gameBg;
@@ -59,6 +64,7 @@ void box2dInit() {
 
 // Inicializa el jugador y los elementos del juego
 void gameInit(){
+	gameWon = loadImage("Images/gameWon.png");
 	gameBg = loadImage("Images/GameBg.png");
 	gameBg.resize(width, height);
 	x_ofset = width/2;
@@ -126,7 +132,7 @@ void displayText(String textToShow, float x, float y, color textColor, int textS
 
 
 void draw(){
-	if (currentLevel.levelNumber > 0){
+	if (currentLevel.levelNumber > 0 && !GAME_WON && !GAME_OVER){
 		if (!pause) {
 			background(0);
 			image(gameBg, x_ofset, height/2);
@@ -139,8 +145,18 @@ void draw(){
 		}
 		displayStats();
 	}else{
-		menu.showMenu();
+		if(GAME_WON){
+			showWinner();
+		}else if (GAME_OVER){
+		}else{
+			menu.showMenu();
+		}
+
 	}
+}
+
+void showWinner(){
+	image(gameWon, width/2, height/2);
 }
 
 // Obtenemos el objecto a partir del fixture

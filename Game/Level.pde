@@ -10,6 +10,8 @@ class Level{
 	ArrayList<GameObject> garbage;
 	ArrayList<Boss> bosses;
 	Flock flock;
+	int animationElapsed;
+	int animationTime;
 
 	PVector worldDirection;
 	PImage worldImage;
@@ -23,14 +25,21 @@ class Level{
 	Level(Player player, int waveAmmount, int levelNumber){
 		this.player = player;
 		this.waveAmmount = waveAmmount;
-		waveCurrent = 0;
 
 		this.levelNumber = levelNumber;
-		mediaPath = "Images/Level_" + levelNumber;
-		completed = false;
+		
+		initLevel();
+	}
 
+	void initLevel(){
+		mediaPath = "Images/Level_" + levelNumber;
+		
+		waveCurrent = 0;
+		completed = false;
+		animationElapsed = 0;
+		animationTime = ((int)3 * FRAME_RATE);
 		worldAngle = 0;
-		if (levelNumber > 0){
+		if (levelNumber > 0 && levelNumber <= GAME_LEVELS){
 			worldImage = loadImage(mediaPath + "/bg.png");
 			enemyImage = loadImage(mediaPath + "/enemy.png");
 		}
@@ -51,7 +60,7 @@ class Level{
 		objects.add(flock);
 		objects.add(player);
 
-		wave = new Wave(flock, 50, 200, FRAME_RATE * SECONDS_TO_WAVE);
+		wave = new Wave(flock, 10, 20, FRAME_RATE * SECONDS_TO_WAVE);
 		wave.enemyImage = enemyImage;
 	}
 
@@ -68,9 +77,8 @@ class Level{
 				o.update();
 				o.display();
 			}	
+			wave.display();
 		}
-
-		bosses.get(0).display();
 	}
 
 	boolean inWave(){
@@ -79,15 +87,31 @@ class Level{
 
 	// Actualiza los elementos del juego
 	void update(){
-		if (!completed && levelNumber > 0){
-			//updateLevel();
+		if (levelNumber - 1 == GAME_LEVELS){
+			GAME_WON = true;
+		}else if (completed){
+			levelNumber++;
+			initLevel();
+		}else if (!completed && levelNumber > 0 ){
+			updateLevel();
+
 		}
-		bosses.get(0).update();
 	}
 
 	void updateLevel(){
 		if (wave.cleared){
 			nextWave();
+		}
+		if (waveCurrent == waveAmmount  && animationElapsed < animationTime){
+			player.stop();
+			player.moveToPoint(new PVector(100,height/2));
+			player.cutScene = true;
+			wave.bossFight = true;
+			wave.finalBoss = bosses.get(levelNumber-1);
+			animationElapsed ++;
+		}
+		if (animationElapsed >= animationTime){
+			player.cutScene = false;
 		}
 		wave.update();
 		for (Projectile p  : player.projectiles){
@@ -100,11 +124,9 @@ class Level{
 	}
 
 	void nextWave(){
-		// Caca genetica
 		if (flock.agents.size() == 0){
 			waveCurrent++;
-			completed = waveCurrent == waveAmmount;			
-			wave = new Wave(flock, 30, 100, FRAME_RATE * SECONDS_TO_WAVE, wave.sortedDnas);
+			wave = new Wave(flock, 10, 20, FRAME_RATE * SECONDS_TO_WAVE, wave.sortedDnas);
 			wave.enemyImage = enemyImage;
 		}
 	}

@@ -20,6 +20,8 @@ class Wave{
 	int currEnemy;
 
 	PImage enemyImage;
+	boolean bossFight;
+	Boss finalBoss;
 
 	Wave(Flock flock, int costActive, int costGlobal, int elapse){
 		generalInit(flock, costActive, costGlobal, elapse);
@@ -39,6 +41,7 @@ class Wave{
 		costUsed = 0;
 		currEnemy = 0;
 		cleared = false;
+		bossFight = false;
 	}
 
 	void createDna(){
@@ -67,9 +70,13 @@ class Wave{
 		maxChilds = int(costGlobal / 10);
 		lowestParent = int(maxChilds * PARENT_COEFICIENT) + 1;
 		
-		while(currCost < costGlobal){			
-			EnemyDna parent1 = oldDna.get(iParent);
-			EnemyDna parent2 = oldDna.get(jParent);
+		while(currCost < costGlobal){	
+			EnemyDna parent1 = oldDna.get(0);
+			EnemyDna parent2 = oldDna.get(0);
+			if (oldDna.size() > 1){
+				parent1 = oldDna.get(iParent);
+				parent2 = oldDna.get(jParent);
+			}
 
 			EnemyDna child = combine(parent1, parent2);
 			dnas.add(child);
@@ -107,7 +114,10 @@ class Wave{
 	}
 
 	void update(){
-		if (frameCount % 60 == 0 && currEnemy < dnas.size() && startElapse <= 0 && currentCost() < costActive){
+		if (bossFight){
+			finalBoss.update();
+			currentLevel.completed =finalBoss.hp <= 0;
+		}else if (frameCount % 60 == 0 && currEnemy < dnas.size() && startElapse <= 0 && currentCost() < costActive){
 			EnemyDna currDna = dnas.get(currEnemy);
 			Seeker s = new Seeker(width, random(0, height) ,currDna.turnSpeed * god.turnSpeed, currDna.speed * god.speed, (int)( (god.shootElapsed / currDna.shootElapsed) ));			
 			currEnemy ++;			
@@ -118,6 +128,12 @@ class Wave{
 			cleared = currEnemy >= dnas.size();
 		}
 		startElapse--;
+	}
+
+	void display(){
+		if (bossFight){
+			finalBoss.display();
+		}
 	}
 
 	int currentCost(){
