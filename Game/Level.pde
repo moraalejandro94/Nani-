@@ -60,7 +60,7 @@ class Level{
 		objects.add(flock);
 		objects.add(player);
 
-		wave = new Wave(flock, 10, 20, FRAME_RATE * SECONDS_TO_WAVE);
+		wave = new Wave(flock, 10, 50, FRAME_RATE * SECONDS_TO_WAVE);
 		wave.enemyImage = enemyImage;
 	}
 
@@ -87,24 +87,25 @@ class Level{
 
 	// Actualiza los elementos del juego
 	void update(){
-		if (levelNumber - 1 == GAME_LEVELS){
-			GAME_WON = true;
-		}else if (completed){
-			levelNumber++;
-			initLevel();
-		}else if (!completed && levelNumber > 0 ){
-			updateLevel();
-
+		if (!GAME_OVER){
+			if (levelNumber - 1 == GAME_LEVELS){
+				GAME_WON = true;
+			}else if (completed){
+				levelNumber++;
+				initLevel();
+			}else if (!completed && levelNumber > 0 ){
+				updateLevel();
+			}
 		}
 	}
 
 	void updateLevel(){
-		if (wave.cleared){
+		if (wave.cleared && !GAME_OVER){
 			nextWave();
 		}
 		if (waveCurrent == waveAmmount  && animationElapsed < animationTime){
 			player.stop();
-			player.moveToPoint(new PVector(100,height/2));
+			player.moveToPoint(new PVector(100, player.getPixelPos().y));
 			player.cutScene = true;
 			wave.bossFight = true;
 			wave.finalBoss = bosses.get(levelNumber-1);
@@ -126,6 +127,7 @@ class Level{
 	void nextWave(){
 		if (flock.agents.size() == 0){
 			waveCurrent++;
+			PLAYER_POINTS = player.score;
 			wave = new Wave(flock, 10, 20, FRAME_RATE * SECONDS_TO_WAVE, wave.sortedDnas);
 			wave.enemyImage = enemyImage;
 		}
@@ -212,6 +214,24 @@ class Level{
 			popMatrix();
 		}
 
+	}
+
+	void resetWave(){
+		if (wave.bossFight){	
+		}else{
+			for (Enemy e: flock.agents){
+				e.dead = true;
+				addToGarbage(e);
+			}
+			wave = (wave.parents == null) ? new Wave(flock, wave.costActive, wave.costGlobal, FRAME_RATE * SECONDS_TO_WAVE) : new Wave(flock, wave.costActive, wave.costGlobal, FRAME_RATE * SECONDS_TO_WAVE, wave.parents);
+			wave.enemyImage = enemyImage;
+
+		}
+		player.score = PLAYER_POINTS;
+		player.recovering = false;
+		player.hp = 3;
+		garbageCollector();
+		GAME_OVER = false;
 	}
 
 	String waveName(){

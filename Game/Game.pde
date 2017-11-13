@@ -6,17 +6,24 @@ import org.jbox2d.dynamics.*;
 import org.jbox2d.dynamics.contacts.*;
 
 boolean pause = false;
+
 char pauseButton = 'p';
+char startButton = 10;
+char nextButton = 'L';
+char prevButton = 'K';
+
 int FRAME_RATE = 60;
 float ROTATION_RATE = 0.004;
 int LEVEL_WAVES = 1;
 int PLAYER_HIT_MULTIPLIER = 30 * FRAME_RATE;
+int PLAYER_POINTS = 0;
 float PARENT_COEFICIENT = 0.10;
 int GAME_LEVELS = 1;
 boolean GAME_OVER = false;
 boolean GAME_WON = false;
 
 PImage gameWon;
+PImage gameOver;
 
 float BACKGROUND_MOVE = 1;
 PImage gameBg;
@@ -65,6 +72,9 @@ void box2dInit() {
 // Inicializa el jugador y los elementos del juego
 void gameInit(){
 	gameWon = loadImage("Images/gameWon.png");
+	gameWon.resize(width, height);
+	gameOver = loadImage("Images/gameOver.jpg");
+	gameOver.resize(width, height);
 	gameBg = loadImage("Images/GameBg.png");
 	gameBg.resize(width, height);
 	x_ofset = width/2;
@@ -132,7 +142,17 @@ void displayText(String textToShow, float x, float y, color textColor, int textS
 
 
 void draw(){
-	if (currentLevel.levelNumber > 0 && !GAME_WON && !GAME_OVER){
+	if (GAME_OVER){
+		menu.gameOverMenu();
+	}else if(GAME_WON){
+		showWinner();
+	}else if (currentLevel.levelNumber == 0){
+		menu.showMenu();
+
+		// aaaaaaaaaahhhh
+
+		player.moveToPoint(new PVector(0, 0));
+	}else{
 		if (!pause) {
 			background(0);
 			image(gameBg, x_ofset, height/2);
@@ -144,14 +164,6 @@ void draw(){
 			displayPause();
 		}
 		displayStats();
-	}else{
-		if(GAME_WON){
-			showWinner();
-		}else if (GAME_OVER){
-		}else{
-			menu.showMenu();
-		}
-
 	}
 }
 

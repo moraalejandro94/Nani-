@@ -16,6 +16,7 @@ class Wave{
 
 	ArrayList<EnemyDna> dnas;
 	ArrayList<EnemyDna> sortedDnas;
+	ArrayList<EnemyDna> parents;
 	int startElapse;
 	int currEnemy;
 
@@ -64,6 +65,9 @@ class Wave{
 		int currCost = 0;
 		dnas = new ArrayList();
 		sortedDnas = new ArrayList();
+		parents = new ArrayList();
+		parents = oldDna;
+
 
 		iParent = 0;
 		jParent = iParent + 1;
