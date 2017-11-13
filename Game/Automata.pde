@@ -10,6 +10,8 @@ class Automata extends Boss{
 	int ellapsed = 0;
 	int updateEllapsed = 0;
 	int updatingEllapsed = 0;
+	float reviveProbability = 0.4;
+	int reviveEllapsed = 0;
 	int updatingTime = FRAME_RATE; 
 	int updateTime = FRAME_RATE * 5;
 	int enemiesTime = FRAME_RATE * 7;
@@ -92,10 +94,29 @@ class Automata extends Boss{
 		return result;
 	}
 
+	void resetCells(){
+		reviveEllapsed = 0;
+		for (int r = 0; r < rows; r++) {			
+			for (int c = 0; c < columns; c++) {
+				AutomataCell cell = cells[r][c];
+				if (random(0, 1) > reviveProbability){
+					cell.newState = 1;
+				}else{
+					cell.newState = 0;
+				}
+			}
+		}
+
+	}
+
 	void update(){
 		next();
-		ellapsed++;
+		ellapsed++;		
+		if (reviveEllapsed > updateTime){
+			resetCells();
+		}
 		if (ellapsed > enemiesTime){
+			reviveEllapsed++;
 			updatingTime++;
 			if (updatingTime > updateTime){
 				updateEllapsed++;
