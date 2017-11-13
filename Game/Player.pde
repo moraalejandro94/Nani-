@@ -58,6 +58,9 @@ class Player extends Ship implements UserInput{
 			display = false;
 			blinkElapsed = 0;
 		}
+		if(hp <= 0){
+			GAME_OVER = true;
+		}
 	}
 
 	void move(int direction) {
