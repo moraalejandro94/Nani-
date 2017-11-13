@@ -14,8 +14,15 @@ class Automata extends Boss{
 	int updateTime = FRAME_RATE * 5;
 	int enemiesTime = FRAME_RATE * 7;
 
+	float xOfset;
+	float yOfset;
+
 	Automata(int hp, float w) {
 		super(hp);
+
+		xOfset = (width - width/3);
+		yOfset = 150;
+
 		name = "Automata";
 		rows = (int)((height/2) / w);
 		columns = (int)((width/3) / w);
@@ -26,7 +33,7 @@ class Automata extends Boss{
 			cells[r] = new AutomataCell[columns];
 			enemies[r] = new Seeker[columns];
 			for (int c = 0; c < columns; c++) {
-				cells[r][c] = createCell(c * w + (width - 900), r * w + 200, w);				
+				cells[r][c] = createCell(c * w + xOfset, r * w + yOfset, w);
 			}
 		}
 	} 
@@ -55,8 +62,15 @@ class Automata extends Boss{
 				else if (cell.state == 1 && n > 3) cell.newState = 0;
 				else if (cell.state == 0 && n == 3) cell.newState = 1;
 				else cell.newState = cell.state;
-				if (cell.state == 1 && (ellapsed > enemiesTime && updatingTime < updateTime)){										
-					enemies[r][c] = new Seeker(c * w + (width - 900), r * w + 200 ,0, 0.9 * god.speed, 20);
+				if (cell.state == 1 && (ellapsed > enemiesTime && updatingTime < updateTime) && !cell.isEnemy){
+					Seeker s = new Seeker(c * w + xOfset, r * w + yOfset,0, 0.9 * god.speed, 20, true, 0);
+					s.normalSpeed = 0;
+					s.dna = god;			
+					s.score = 1;
+					s.movable = false;
+					currentLevel.objects.add(s);
+					enemies[r][c] = s;
+					cell.isEnemy = true;
 				}
 				if (cell.state == 0 && enemies[r][c] != null && ellapsed > enemiesTime){
 					currentLevel.addToGarbage(enemies[r][c]);

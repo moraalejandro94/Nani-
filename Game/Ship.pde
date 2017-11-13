@@ -11,6 +11,15 @@ class Ship extends CollidingObject{
 
 	Ship(float x, float y, float mass){
 		super(x, y, mass);
+		initGeneral();
+	}
+
+	Ship(float x, float y, float mass, boolean isStatic, int bodyShape){
+		super(x, y, mass, isStatic, bodyShape);
+		initGeneral();
+	}
+
+	void initGeneral(){
 		hp = 1;
 		normalSpeed = 0;
 		boostSpeed = 0;

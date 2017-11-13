@@ -4,12 +4,14 @@ class AutomataCell{
 	float w;
 	int state;
 	int newState;
+	boolean isEnemy;
 
 	AutomataCell(float x, float y, float w, int state) {
 		this.x = x;
 		this.y = y;
 		this.w = w;
 		this.state = state;
+		isEnemy = false;
 	}
 
 	void display() {
@@ -17,7 +19,7 @@ class AutomataCell{
 		color c = getColor();
 		noStroke();
 		fill(c);
-		rect(x, y, 7, 7);
+		rect(x, y, 15, 15);
 		
 	}  
 

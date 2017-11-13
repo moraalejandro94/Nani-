@@ -8,6 +8,11 @@ class Enemy extends Ship {
 		super(x,y,mass);
 		headginAngle = 0;
 	}
+
+	Enemy (float x, float y, float mass, boolean isStatic, int bodyShape){
+		super(x,y,mass, isStatic, bodyShape);
+		headginAngle = 0;
+	}
 	
 	void update(){
 		super.update();
@@ -31,7 +36,7 @@ class Enemy extends Ship {
 			imageMode(CENTER);
 			rotate(headginAngle);
 			fill(color(255*dna.speed , 255* dna.turnSpeed, 255*dna.shootElapsed));
-			ellipse(0, 0, mass, mass);
+			displayForm();
 			if (shipImage != null){
 				image(shipImage, 0, 0, mass, mass);
 			}

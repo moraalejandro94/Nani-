@@ -16,6 +16,15 @@ class Seeker extends Enemy {
 		projectileForce = new Vec2(15000,0);
 	}
 
+	Seeker(float x, float y, float rotationSpeed, float normalSpeed, int shotSpeed, boolean isStatic, int bodyShape){
+		super(x,y, map (normalSpeed,10, god.speed, 60, 15), isStatic, bodyShape);
+		this.rotationSpeed = rotationSpeed;
+		this.normalSpeed = normalSpeed; 
+		this.shotSpeed = shotSpeed; 
+		projectileForce = new Vec2(15000,0);
+	}
+
+
 	void seek(PVector target) {
 		PVector desired = PVector.sub(target, getPixelPos());
 		desired.setMag(normalSpeed);

@@ -60,7 +60,7 @@ class Level{
 		objects.add(flock);
 		objects.add(player);
 
-		wave = new Wave(flock, 10, 50, FRAME_RATE * SECONDS_TO_WAVE);
+		wave = new Wave(flock, 10, 20, FRAME_RATE * SECONDS_TO_WAVE);
 		wave.enemyImage = enemyImage;
 	}
 

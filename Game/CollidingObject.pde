@@ -3,22 +3,33 @@ class CollidingObject extends GameObject{
 	int hp;
 	PVector speed;
 
+	int bodyType;
+
 	CollidingObject(float x, float y, float mass) {
 		super(x,y, mass);
 		speed = new PVector(0, 0);
-		makeBody();
+		bodyType = 0;
+		makeBody(BodyType.DYNAMIC);
 	}
-	void makeBody() {
+
+	CollidingObject(float x, float y, float mass, boolean staticBody, int bodyShape) {
+		super(x,y, mass);
+		this.bodyType = bodyShape;
+		speed = new PVector(0, 0);
+		makeBody((staticBody) ? BodyType.STATIC  : BodyType.DYNAMIC);
+	}
+
+	void makeBody(BodyType bodyType) {
 		BodyDef bd = new BodyDef();
 		bd.position = box2d.coordPixelsToWorld(this.objectPosition.x, this.objectPosition.y);
-		bd.type = BodyType.DYNAMIC;
+		bd.type = bodyType;
 		body = box2d.world.createBody(bd);
 
-		CircleShape cs = new CircleShape();
-		cs.setRadius(box2d.scalarPixelsToWorld(mass/2));
+		Shape finalShape = new CircleShape();
+		finalShape.setRadius(box2d.scalarPixelsToWorld(mass/2));
 
 		FixtureDef fd = new FixtureDef();
-		fd.setShape(cs);
+		fd.setShape(finalShape);
 		fd.setDensity(0);
 		fd.setRestitution(0);
 
@@ -48,10 +59,20 @@ void display() {
 		Vec2 pos = box2d.getBodyPixelCoord(body);
 		pushMatrix();
 		translate(pos.x, pos.y);
-		fill(255,0,0);
-		ellipse(0, 0, mass, mass);
+		displayForm();
 		popMatrix();
 	}
+}
+
+void displayForm(){
+	if (bodyType == 0){
+		ellipseMode(CENTER);
+		ellipse(0, 0, mass, mass);
+	}else if (bodyType == 1){
+		rectMode(CENTER);
+		rect(0, 0, mass, mass);
+	}
+	
 }
 
 void applyForce(Vec2 force){
