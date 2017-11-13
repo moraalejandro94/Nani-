@@ -13,8 +13,8 @@ class Sierpinski extends Boss{
 		pointLimit = 420;
 
 		points = new ArrayList();
-		pointsDisplay = new ArrayList();
-		enemies = new ArrayList();
+		pointsDisplay = new ArrayList()
+;		enemies = new ArrayList();
 		start = new PVector(width/2 + 500,150);
 		points.add(new PVector(width/2 + 200, 100));
 		points.add(new PVector(width/4 + 200, height - 100));
