@@ -8,7 +8,7 @@ class Enemy extends Ship {
 		super(x,y,mass);
 		headginAngle = 0;
 	}
-
+	
 	void update(){
 		super.update();
 		dna.lifeElapsed++;

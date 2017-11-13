@@ -1,9 +1,11 @@
 class Seeker extends Enemy {
 	float rotationSpeed;
+	boolean movable ;
 
 	Seeker(float x, float y, float mass, float rotationSpeed){
 		super(x,y,mass);
 		this.rotationSpeed = rotationSpeed;
+		movable = true;
 	}
 
 	Seeker(float x, float y, float rotationSpeed, float normalSpeed, int shotSpeed){		
@@ -41,7 +43,7 @@ class Seeker extends Enemy {
 
 
 	void shootProjectile(){
-		if(elapsed > shotSpeed){
+		if(elapsed > shotSpeed && inScreen() ){
 			Vec2 pos = box2d.getBodyPixelCoord(body);
 			Vec2 bulletPos = new Vec2(pos.x - mass, pos.y );
 			Vec2 bulletForce = new Vec2(-projectileForce.x, projectileForce.y);

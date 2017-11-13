@@ -8,6 +8,7 @@ class Level{
 
 	ArrayList<GameObject> objects;
 	ArrayList<GameObject> garbage;
+	ArrayList<Boss> bosses;
 	Flock flock;
 
 	PVector worldDirection;
@@ -34,6 +35,9 @@ class Level{
 			enemyImage = loadImage(mediaPath + "/enemy.png");
 		}
 
+		bosses = new ArrayList();
+		initBosses();
+
 		objects = new ArrayList();
 		garbage = new ArrayList();
 		worldDirection = new PVector(0, 0);
@@ -51,6 +55,10 @@ class Level{
 		wave.enemyImage = enemyImage;
 	}
 
+	void initBosses(){
+		bosses.add(new Sierpinski(5));
+	}
+
 
 	void display(){
 		if (levelNumber > 0){
@@ -61,6 +69,8 @@ class Level{
 				o.display();
 			}	
 		}
+
+		bosses.get(0).display();
 	}
 
 	boolean inWave(){
@@ -70,8 +80,9 @@ class Level{
 	// Actualiza los elementos del juego
 	void update(){
 		if (!completed && levelNumber > 0){
-			updateLevel();
+			//updateLevel();
 		}
+		bosses.get(0).update();
 	}
 
 	void updateLevel(){
@@ -127,13 +138,24 @@ class Level{
 		ParticleSystem particleSystem = new ParticleSystem(deathPosition.x, deathPosition.y, enemy.score);
 		objects.add(particleSystem);
 		player.score += enemy.score;
+		if((enemy instanceof Seeker)){
+			if ( !((Seeker)enemy).movable ){
+				Boss currBoss = bosses.get(levelNumber-1);
+				currBoss.hp --; 
+			}
+		}
 	}
 
 	// Agregamos la dirección opuesta a los elementos del mundo cuando el jugador se mueve
 	void screenController(float speed){
 		worldDirection.x = speed * -1;
-		for(GameObject o : objects){
-			o.setSpeed(worldDirection);
+		for(GameObject o : objects){			
+			if (! ( o instanceof Seeker) ){				
+				o.setSpeed(worldDirection);
+			}
+			else if (((Seeker)o).movable) {
+				o.setSpeed(worldDirection);	
+			}
 		}
 	}
 
@@ -168,5 +190,12 @@ class Level{
 			popMatrix();
 		}
 
+	}
+
+	String waveName(){
+		if (waveCurrent == waveAmmount){
+			return bosses.get(levelNumber-1).name;
+		}
+		return "WAVE " + String.valueOf(waveCurrent + 1) + "/"+ String.valueOf(waveAmmount);
 	}
 }

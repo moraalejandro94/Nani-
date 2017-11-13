@@ -9,7 +9,7 @@ boolean pause = false;
 char pauseButton = 'p';
 int FRAME_RATE = 60;
 float ROTATION_RATE = 0.004;
-int LEVEL_WAVES = 2;
+int LEVEL_WAVES = 0;
 int PLAYER_HIT_MULTIPLIER = 30 * FRAME_RATE;
 float PARENT_COEFICIENT = 0.10;
 
@@ -102,7 +102,7 @@ void displayStats(){
 	rect(120,70,player.boostAvailable, 20);
 
 
-	textToShow = "WAVE " + String.valueOf(currentLevel.waveCurrent + 1) + "/"+ String.valueOf(currentLevel.waveAmmount);
+	textToShow = currentLevel.waveName();
 	displayText(textToShow, width, 40, color(13, 108, 1), 30, RIGHT);
 	if (currentLevel.inWave()){
 		// progresso del wave
