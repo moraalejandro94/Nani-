@@ -16,6 +16,7 @@ float PARENT_COEFICIENT = 0.10;
 float BACKGROUND_MOVE = 1;
 PImage gameBg;
 float x_ofset;
+float x_ofset2;
 
 int SECONDS_TO_WAVE = 1;
 
@@ -59,8 +60,9 @@ void box2dInit() {
 // Inicializa el jugador y los elementos del juego
 void gameInit(){
 	gameBg = loadImage("Images/GameBg.png");
-	gameBg.resize(0, height);
-	x_ofset = -width;
+	gameBg.resize(width, height);
+	x_ofset = width/2;
+	x_ofset2 = -width/2;
 	player = new Player(width/2, height/2, 40);
 	player.setSpeed(2500);
 	player.boostSpeed = 7500;
@@ -127,7 +129,8 @@ void draw(){
 	if (currentLevel.levelNumber > 0){
 		if (!pause) {
 			background(0);
-			image(gameBg, x_ofset + width, height/2);
+			image(gameBg, x_ofset, height/2);
+			image(gameBg, x_ofset2, height/2);
 			box2d.step();
 			currentLevel.display();
 			currentLevel.update();

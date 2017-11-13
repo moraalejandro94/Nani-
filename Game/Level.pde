@@ -141,14 +141,21 @@ class Level{
 		float bgForce = (rotation > 0) ? BACKGROUND_MOVE : -BACKGROUND_MOVE;
 		bgForce *= (player.boosting && player.boostAvailable > 0) ? 4 : 1;
 		x_ofset += bgForce;
+		x_ofset2 += bgForce;
 		worldAngle += rotation;
-		if (x_ofset > 0){
-			x_ofset = -width;
-		}else if (x_ofset < -width *2){
-			x_ofset = -width;
-		}
+		x_ofset = checkEnd(x_ofset);
+		x_ofset2 = checkEnd(x_ofset2);
 	}
 
+
+	float checkEnd(float ofset){
+		if (ofset < -width/2){
+			return width*3 / 2;
+		}else if (ofset > width*3 / 2){
+			return -width/2;
+		}
+		return ofset;
+	}
 
 	// Muestra y rota los elementos del fondo
 	void displayBackground(){
