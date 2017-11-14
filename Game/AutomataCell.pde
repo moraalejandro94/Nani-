@@ -20,11 +20,20 @@ class AutomataCell{
 		noStroke();
 		fill(c);
 		rect(x, y, 15, 15);
-		
+		colorMode(RGB);
+	}  
+
+	void display(color c) {
+		println("CACA");
+		state = newState;		
+		noStroke();		
+		rect(x, y, 15, 15);
+		colorMode(RGB);
 	}  
 
 	color getColor() {
-		return state == 0? color(150, 100, 0) : color(255, 255, 128);
+		colorMode(HSB);
+		return state == 0? color(150, 255, 200) : color(255, 255, 255);		
 	}
 
 

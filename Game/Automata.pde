@@ -38,14 +38,50 @@ class Automata extends Boss{
 			}
 		}
 	} 
+
+	color getCellColorCenter(int rowNumber, int colNumber){
+		int centerRow = (int)rows/2;
+		int centerCol = (int)columns/2;
+		int rowDistance = abs(rowNumber-centerRow);
+		int colDistance = abs(colNumber - centerCol);
+		int distance = rowDistance + colDistance;
+		int hue =  ((int)map (distance, 0, centerRow, 0, 255));
+		colorMode(HSB);
+		int brightness = 60;
+		if (cells[rowNumber][colNumber].state == 1){
+			brightness = 255;
+		}
+		color c = color(hue, 255, brightness);
+		return c; 
+	}
+
+	color getCellColorRow(int rowNumber, int colNumber){
+		int centerRow = (int)rows/2;
+		int centerCol = (int)columns/2;
+		int rowDistance = abs(rowNumber-centerRow);
+		int colDistance = abs(colNumber - centerCol);
+		int distance = rowDistance + colDistance;
+		int hue =  ((int)map (rowNumber, 0, rows, 0, 255));
+		colorMode(HSB);
+		int brightness = 60;
+		if (cells[rowNumber][colNumber].state == 1){
+			brightness = 255;
+		}
+		color c = color(hue, 255, brightness);
+		return c; 
+	}
 	
 	void display() {
 		fill(255,0,0);
 		for (int r = 0; r < rows; r++) {
 			for (int c = 0; c < columns; c++) {
-				cells[r][c].display();
+				colorMode(HSB);
+				color co = getCellColorCenter(r,c);
+				fill(co);
+				cells[r][c].display(co);				
 			}
 		}
+		colorMode(RGB);
 		fill(255,0,0);
 		rect(width - 200, 50, hp *10, 20);
 	}
@@ -154,12 +190,7 @@ class Automata extends Boss{
 			}
 
 		}
-		for (int r = 0; r < rows; r++) {
-			for (int c = 0; c < columns; c++) {
-				cells[r][c].display();
-			}
-
-		}		
+				
 	}
 
 
