@@ -1,6 +1,9 @@
 class CollidingObject extends GameObject{
 	Body body;
 	int hp;
+	int originalHP;
+	int hpElpased;
+	int hpElapsedTotal;
 	PVector speed;
 
 	int bodyType;
@@ -8,15 +11,27 @@ class CollidingObject extends GameObject{
 	CollidingObject(float x, float y, float mass) {
 		super(x,y, mass);
 		speed = new PVector(0, 0);
+		initGeneralColliding();
 		bodyType = 0;
 		makeBody(BodyType.DYNAMIC);
 	}
 
 	CollidingObject(float x, float y, float mass, boolean staticBody, int bodyShape) {
 		super(x,y, mass);
-		this.bodyType = bodyShape;
 		speed = new PVector(0, 0);
+		initGeneralColliding();
+		this.bodyType = bodyShape;
 		makeBody((staticBody) ? BodyType.STATIC  : BodyType.DYNAMIC);
+	}
+
+	void initGeneralColliding(){
+		hpElapsedTotal = FRAME_RATE;
+		hpElpased = hpElapsedTotal;
+	}
+
+	void setHP(int hp){
+		this.hp = hp;
+		this.originalHP = hp;
 	}
 
 	void makeBody(BodyType bodyType) {
@@ -121,6 +136,15 @@ void decreaseHP(){
 	if (hp <= 0){
 		die();
 	}
+	hpElpased = 0;
+}
+
+void displayHP(){
+	if (!dead){
+		PVector position = getPixelPos();
+		rectMode(CENTER);
+		rect(position.x, position.y - mass / 2 - 15, mass * hp / originalHP, 5);
+	}
 }
 
 void die(){		
@@ -132,5 +156,6 @@ void kill(){
 void update(){
 	stop();
 	speed.mult(0);
+	hpElpased++;
 }
 }

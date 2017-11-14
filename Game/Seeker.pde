@@ -10,6 +10,7 @@ class Seeker extends Enemy {
 
 	Seeker(float x, float y, float rotationSpeed, float normalSpeed, int shotSpeed){		
 		super(x,y, map (normalSpeed,10, god.speed, 60, 15));
+		setHPMass();
 		this.rotationSpeed = rotationSpeed;
 		this.normalSpeed = normalSpeed; 
 		this.shotSpeed = shotSpeed; 
@@ -18,10 +19,25 @@ class Seeker extends Enemy {
 
 	Seeker(float x, float y, float rotationSpeed, float normalSpeed, int shotSpeed, boolean isStatic, int bodyShape){
 		super(x,y, map (normalSpeed,10, god.speed, 60, 15), isStatic, bodyShape);
+		setHPMass();
 		this.rotationSpeed = rotationSpeed;
 		this.normalSpeed = normalSpeed; 
 		this.shotSpeed = shotSpeed; 
 		projectileForce = new Vec2(15000,0);
+	}
+
+	void setHPMass(){
+		int newHp = 1;
+		if (mass > 26){
+			newHp++;
+		}if (mass > 37){
+			newHp++;
+		}if (mass > 48){
+			newHp++;
+		}if (mass > 59){
+			newHp++;
+		}
+		setHP(newHp);
 	}
 
 

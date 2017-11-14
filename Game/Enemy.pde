@@ -20,7 +20,7 @@ class Enemy extends Ship {
 	}
 
 	void playerHit(){
-		dna.playerHits ++;		
+		dna.playerHits++;
 	}
 
 	void generateFitness(){		
@@ -41,6 +41,9 @@ class Enemy extends Ship {
 				image(shipImage, 0, 0, mass, mass);
 			}
 			popMatrix();
+		}
+		if (hpElpased < hpElapsedTotal){
+			displayHP();
 		}
 	}
 }
