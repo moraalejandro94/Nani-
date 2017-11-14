@@ -43,11 +43,26 @@ class Sierpinski extends Boss{
 
 	void display(){
 		for (PVector p: pointsDisplay){
-			fill(255,50,50,150);
+			color c = getPointColor(p);
+			fill(c);
 			ellipse(p.x, p.y, 10, 10);
+			colorMode(RGB);
 		}
 		fill(255,0,0);
 		rect(width - 200, 50, hp *10, 20);
+	}
+
+	color getPointColor(PVector p){
+		float d = abs(p.dist(points.get(0)));
+		float d1 = abs(p.dist(points.get(1)));
+		float d2 = abs(p.dist(points.get(2)));
+		float max = abs(points.get(0).dist(points.get(2)));
+
+		int hue = ((int)map(d, 0, max, 0,255));
+		colorMode(HSB);
+		color c = color(hue, 255,255);		
+		return c;
+
 	}
 
 	void update(){

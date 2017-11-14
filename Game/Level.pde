@@ -65,7 +65,7 @@ class Level{
 	}
 
 	void initBosses(){
-		bosses.add(new Automata(5, 40));
+		bosses.add(new Sierpinski(5));
 	}
 
 
