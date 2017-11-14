@@ -16,6 +16,15 @@ abstract class Boss{
 	void cleanEnemies(){
 		for(Enemy e: enemies){
 			e.dead  = true;
+			currentLevel.addToGarbage(e);			
+		}
+		enemies = new ArrayList();
+	}
+
+
+	void cleanEnemiesAndProjectiles(){
+		for(Enemy e: enemies){
+			e.dead  = true;
 			currentLevel.addToGarbage(e);
 			for(Projectile p: e.projectiles){
 				p.dead = true;

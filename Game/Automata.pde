@@ -14,6 +14,7 @@ class Automata extends Boss{
 	int updatingTime = FRAME_RATE; 
 	int updateTime = FRAME_RATE * 2;
 	int enemiesTime = FRAME_RATE * 7;
+	int enemieNumber = 4;
 
 	float xOfset;
 	float yOfset;
@@ -92,14 +93,16 @@ class Automata extends Boss{
 
 	void initEnemies(){		
 		cleanEnemies();
-		for (int i = 0; i < hp; i++){
+		for (int i = 0; i < enemieNumber; i++){
 			int rowNumber = (int)random(1, rows-2);
 			int colNumber = (int)random(1, columns-2);
 			activateNeighbors(rowNumber, colNumber);		
 			AutomataCell c = cells[rowNumber][colNumber];	
 			Seeker s = new Seeker(c.x, c.y ,0, 0.9 * god.speed, 20, true, 1);
 			s.normalSpeed = 0;
-			s.dna = god;			
+			s.dna = god;		
+			s.shotSpeed = 60;	
+			s.projectileForce = new Vec2(9000,0);
 			s.score = 1;
 			s.movable = false;
 			currentLevel.objects.add(s);

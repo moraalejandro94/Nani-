@@ -223,7 +223,7 @@ class Level{
 	void resetWave(){
 		if (wave.bossFight){
 			Boss newBoss = wave.finalBoss.resetBoss();
-			wave.finalBoss.cleanEnemies();
+			wave.finalBoss.cleanEnemiesAndProjectiles();
 			bosses.set(levelNumber-1, newBoss);
 			wave.finalBoss = newBoss;
 			startBossFight();

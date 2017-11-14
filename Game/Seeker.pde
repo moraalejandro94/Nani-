@@ -78,7 +78,7 @@ class Seeker extends Enemy {
 				bulletForce.x *= -1;
 			}			
 			Projectile p = new Projectile(bulletPos.x, bulletPos.y, projectileMass, bulletForce, this);
-			projectiles.add(p); 		 
+			projectiles.add(p); 		 			
 		}
 	}
 
