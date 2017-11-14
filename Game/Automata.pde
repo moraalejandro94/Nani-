@@ -5,7 +5,6 @@ class Automata extends Boss{
 	int rows;
 	int columns;
 	AutomataCell[][] cells;
-	ArrayList<Enemy> enemies;
 	float w;
 	int ellapsed = 0;
 	int updateEllapsed = 0;
@@ -121,14 +120,6 @@ class Automata extends Boss{
 		cells[rowNumber+1][colNumber-1].newState=1;
 	}
 
-	void cleanEnemies(){
-		for(Enemy e: enemies){
-			e.dead  = true;
-			currentLevel.addToGarbage(e);
-		}
-		enemies = new ArrayList();
-	}
-
 
 	void next() {
 		for (int r = 0; r < rows; r++) {
@@ -191,6 +182,10 @@ class Automata extends Boss{
 
 		}
 				
+	}
+
+	Boss resetBoss(){
+		return new Automata(initHp, w);
 	}
 
 
