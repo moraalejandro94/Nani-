@@ -5,7 +5,7 @@ class Automata extends Boss{
 	int rows;
 	int columns;
 	AutomataCell[][] cells;
-	Seeker[][] enemies;
+	ArrayList<Enemy> enemies;
 	float w;
 	int ellapsed = 0;
 	int updateEllapsed = 0;
@@ -13,7 +13,7 @@ class Automata extends Boss{
 	float reviveProbability = 0.4;
 	int reviveEllapsed = 0;
 	int updatingTime = FRAME_RATE; 
-	int updateTime = FRAME_RATE * 5;
+	int updateTime = FRAME_RATE * 2;
 	int enemiesTime = FRAME_RATE * 7;
 
 	float xOfset;
@@ -30,10 +30,9 @@ class Automata extends Boss{
 		columns = (int)((width/3) / w);
 		this.w = w;
 		cells = new AutomataCell[rows][];
-		enemies = new Seeker[rows][];		
+		enemies = new ArrayList();		
 		for (int r = 0; r < rows; r++) {
-			cells[r] = new AutomataCell[columns];
-			enemies[r] = new Seeker[columns];
+			cells[r] = new AutomataCell[columns];			
 			for (int c = 0; c < columns; c++) {
 				cells[r][c] = createCell(c * w + xOfset, r * w + yOfset, w);
 			}
@@ -55,6 +54,46 @@ class Automata extends Boss{
 		return new AutomataCell(x, y, w, (int)random(2));
 	}
 
+
+	void initEnemies(){		
+		cleanEnemies();
+		for (int i = 0; i < hp; i++){
+			int rowNumber = (int)random(1, rows-2);
+			int colNumber = (int)random(1, columns-2);
+			activateNeighbors(rowNumber, colNumber);		
+			AutomataCell c = cells[rowNumber][colNumber];	
+			Seeker s = new Seeker(c.x, c.y ,0, 0.9 * god.speed, 20, true, 1);
+			s.normalSpeed = 0;
+			s.dna = god;			
+			s.score = 1;
+			s.movable = false;
+			currentLevel.objects.add(s);
+			enemies.add(s);
+		}		
+	}
+
+	void activateNeighbors(int rowNumber, int colNumber){
+		AutomataCell c = cells[rowNumber][colNumber];
+		c.newState=1;
+		cells[rowNumber-1][colNumber-1].newState=1;
+		cells[rowNumber-1][colNumber].newState=1;
+		cells[rowNumber][colNumber-1].newState=1;
+		cells[rowNumber+1][colNumber].newState=1;
+		cells[rowNumber][colNumber+1].newState=1;
+		cells[rowNumber+1][colNumber+1].newState=1;
+		cells[rowNumber-1][colNumber+1].newState=1;
+		cells[rowNumber+1][colNumber-1].newState=1;
+	}
+
+	void cleanEnemies(){
+		for(Enemy e: enemies){
+			e.dead  = true;
+			currentLevel.addToGarbage(e);
+		}
+		enemies = new ArrayList();
+	}
+
+
 	void next() {
 		for (int r = 0; r < rows; r++) {
 			for (int c = 0; c < columns; c++) {
@@ -63,20 +102,7 @@ class Automata extends Boss{
 				if (cell.state == 1 && n < 2) cell.newState = 0;
 				else if (cell.state == 1 && n > 3) cell.newState = 0;
 				else if (cell.state == 0 && n == 3) cell.newState = 1;
-				else cell.newState = cell.state;
-				if (cell.state == 1 && (ellapsed > enemiesTime && updatingTime < updateTime) && !cell.isEnemy){
-					Seeker s = new Seeker(c * w + xOfset, r * w + yOfset,0, 0.9 * god.speed, 20, true, 0);
-					s.normalSpeed = 0;
-					s.dna = god;			
-					s.score = 1;
-					s.movable = false;
-					currentLevel.objects.add(s);
-					enemies[r][c] = s;
-					cell.isEnemy = true;
-				}
-				if (cell.state == 0 && enemies[r][c] != null && ellapsed > enemiesTime){
-					currentLevel.addToGarbage(enemies[r][c]);
-				}
+				else cell.newState = cell.state;							
 			}
 		}
 	}
@@ -110,10 +136,11 @@ class Automata extends Boss{
 	}
 
 	void update(){
-		next();
+		next();		
 		ellapsed++;		
 		if (reviveEllapsed > updateTime){
 			resetCells();
+			initEnemies();
 		}
 		if (ellapsed > enemiesTime){
 			reviveEllapsed++;
