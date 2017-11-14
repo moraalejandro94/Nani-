@@ -14,13 +14,17 @@ char prevButton = 'K';
 
 int FRAME_RATE = 60;
 float ROTATION_RATE = 0.004;
-int LEVEL_WAVES = 1;
 int PLAYER_HIT_MULTIPLIER = 30 * FRAME_RATE;
 int PLAYER_POINTS = 0;
 float PARENT_COEFICIENT = 0.10;
-int GAME_LEVELS = 1;
+int GAME_LEVELS = 3;
 boolean GAME_OVER = false;
 boolean GAME_WON = false;
+
+int WAVE_ACTIVE_COST = 10;
+int WAVE_GLOBAL_COST = 20;
+int WAVES_PER_LEVEL = 1;
+int SECONDS_TO_WAVE = 6;
 
 PImage gameWon;
 PImage gameOver;
@@ -29,8 +33,6 @@ float BACKGROUND_MOVE = 1;
 PImage gameBg;
 float x_ofset;
 float x_ofset2;
-
-int SECONDS_TO_WAVE = 1;
 
 EnemyDna god;
 
@@ -79,12 +81,12 @@ void gameInit(){
 	gameBg.resize(width, height);
 	x_ofset = width/2;
 	x_ofset2 = -width/2;
-	player = new Player(width/2, height/2, 40);
+	player = new Player(0, height/2, 40);
 	player.setSpeed(2500);
 	player.boostSpeed = 7500;
 	player.shipImage = loadImage("Images/Skins/" + Integer.toString(currentSkin) + ".png");
 	god = new EnemyDna(4200, 100, 25);
-	currentLevel = new Level(player, LEVEL_WAVES, 0);
+	currentLevel = new Level(player, WAVES_PER_LEVEL, 0);
 	menu = new Menu();
 }
 
@@ -115,7 +117,9 @@ void displayStats(){
 	textToShow = "Boost : ";
 	displayText(textToShow, 15, 90, color(13, 108, 1), 30, LEFT);
 
+	rectMode(CORNER);
 	rect(120,70,player.boostAvailable, 20);
+	rectMode(CENTER);
 
 
 	textToShow = currentLevel.waveName();
@@ -148,10 +152,6 @@ void draw(){
 		showWinner();
 	}else if (currentLevel.levelNumber == 0){
 		menu.showMenu();
-
-		// aaaaaaaaaahhhh
-
-		player.moveToPoint(new PVector(0, 0));
 	}else{
 		if (!pause) {
 			background(0);
@@ -198,17 +198,18 @@ void checkPlayer(CollidingObject object){
 	if (!player.boosting){
 		player.decreaseHP();
 		if (object instanceof Enemy){
-			Enemy e = ((Enemy) object);
-			e.playerHit();
-			e.dead = true;
-			checkEnemy(e);
-		}
-		else if (object instanceof Projectile){
+			((Enemy) object).playerHit();
+		}else if (object instanceof Projectile){
 			Projectile projectile = (Projectile) object;
 			if (projectile.owner instanceof Enemy){
 				((Enemy) projectile.owner).playerHit(); 
 			}
 		}
+	}
+	if (object instanceof Enemy){
+		Enemy e = ((Enemy) object);
+		e.dead = true;
+		checkEnemy(e);
 	}
 	object.decreaseHP();
 	currentLevel.addToGarbage(object);
@@ -227,6 +228,9 @@ void shootEnemy(Projectile p, Enemy e){
 void checkEnemy(Enemy enemy, CollidingObject object){
 	if (object instanceof Projectile){
 		shootEnemy((Projectile)object, enemy);
+	}else if(object instanceof Player){
+		enemy.playerHit();
+		enemy.dead = true;
 	}
 	checkEnemy(enemy);
 }

@@ -13,8 +13,9 @@ class Automata extends Boss{
 	int reviveEllapsed = 0;
 	int updatingTime = FRAME_RATE; 
 	int updateTime = FRAME_RATE * 2;
-	int enemiesTime = FRAME_RATE * 7;
+	int enemiesTime = FRAME_RATE;
 	int enemieNumber = 4;
+	boolean rainbow;
 
 	float xOfset;
 	float yOfset;
@@ -22,6 +23,27 @@ class Automata extends Boss{
 	Automata(int hp, float w) {
 		super(hp);
 
+		xOfset = (width - width/3);
+		yOfset = 150;
+		rainbow = true;
+		name = "Automata";
+		rows = (int)((height/2) / w);
+		columns = (int)((width/3) / w);
+		this.w = w;
+		cells = new AutomataCell[rows][];
+		enemies = new ArrayList();		
+		for (int r = 0; r < rows; r++) {
+			cells[r] = new AutomataCell[columns];			
+			for (int c = 0; c < columns; c++) {
+				cells[r][c] = createCell(c * w + xOfset, r * w + yOfset, w);
+			}
+		}
+	} 
+
+
+	Automata(int hp, float w, boolean rainbow) {
+		super(hp);
+		this.rainbow = rainbow;
 		xOfset = (width - width/3);
 		yOfset = 150;
 
@@ -76,9 +98,14 @@ class Automata extends Boss{
 		for (int r = 0; r < rows; r++) {
 			for (int c = 0; c < columns; c++) {
 				colorMode(HSB);
-				color co = getCellColorCenter(r,c);
-				fill(co);
-				cells[r][c].display(co);				
+				if (rainbow){					
+					color co = getCellColorCenter(r,c);
+					fill(co);
+					cells[r][c].display(co);				
+				}
+				else{					
+					cells[r][c].display();				
+				}
 			}
 		}
 		colorMode(RGB);
@@ -184,7 +211,7 @@ class Automata extends Boss{
 			}
 
 		}
-				
+
 	}
 
 	Boss resetBoss(){

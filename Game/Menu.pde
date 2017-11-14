@@ -13,10 +13,10 @@ class Menu{
 	}
 
 	void showMenu() {
-		background(255);
-		noFill();
-		//noStroke();
+		background(0);
 		imageMode(CENTER);
+		image(gameBg, width/2, height/2);
+		noFill();
 
 			// Next Skin
 			image(nextButtonImage, width/2 + width/4, height/2);
@@ -34,10 +34,10 @@ class Menu{
 				clickElapsed = 0;
 			}
 
-		// Botón de Start   
+		// Botón de Start 
 		image(startButtonImage, width/2, height/2 + height/3); 
 		if (keys[startButton]){
-			currentLevel = new Level(player, LEVEL_WAVES, 1);
+			currentLevel = new Level(player, WAVES_PER_LEVEL, 1);
 			clickElapsed = 0;
 		}
 		image(player.shipImage, width/2, height/2, 250, 250);

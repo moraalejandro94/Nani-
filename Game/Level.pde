@@ -12,6 +12,10 @@ class Level{
 	Flock flock;
 	int animationElapsed;
 	int animationTime;
+	int animationElapsed2;
+	int animationTime2;
+
+	PVector moveToVector;
 
 	PVector worldDirection;
 	PImage worldImage;
@@ -21,6 +25,7 @@ class Level{
 	PImage enemyImage;
 
 	boolean completed;
+	boolean newLevel;
 	
 	Level(Player player, int waveAmmount, int levelNumber){
 		this.player = player;
@@ -38,6 +43,7 @@ class Level{
 		completed = false;
 		animationElapsed = 0;
 		animationTime = ((int)3 * FRAME_RATE);
+		animationTime2 = SECONDS_TO_WAVE * FRAME_RATE;
 		worldAngle = 0;
 		if (levelNumber > 0 && levelNumber <= GAME_LEVELS){
 			worldImage = loadImage(mediaPath + "/bg.png");
@@ -60,12 +66,17 @@ class Level{
 		objects.add(flock);
 		objects.add(player);
 
-		wave = new Wave(flock, 10, 20, FRAME_RATE * SECONDS_TO_WAVE);
+		wave = new Wave(flock, WAVE_ACTIVE_COST, WAVE_GLOBAL_COST, FRAME_RATE * SECONDS_TO_WAVE);
 		wave.enemyImage = enemyImage;
+
+		moveToVector = new PVector(width/2, height/2);
+		animationElapsed2 = 0;
 	}
 
 	void initBosses(){
+		bosses.add(new Automata(5, 40, false));
 		bosses.add(new Sierpinski(5));
+		bosses.add(new Automata(5, 40));
 	}
 
 
@@ -104,9 +115,15 @@ class Level{
 			nextWave();
 		}
 		if (waveCurrent == waveAmmount  && animationElapsed < animationTime){
+			moveToVector = new PVector(100, player.getPixelPos().y);
+			showAnimation();
 			startBossFight();
+		}else if (animationElapsed2 < animationTime2){
+			println("animationElapsed2: "+animationElapsed2);
+			println("animationTime2: "+animationTime2);
+			showAnimation();
 		}
-		if (animationElapsed >= animationTime){
+		if (animationElapsed >= animationTime || animationElapsed2 >= animationTime2){
 			player.cutScene = false;
 		}
 		wave.update();
@@ -115,13 +132,21 @@ class Level{
 		}
 	}
 
+
 	void startBossFight(){
-		player.stop();
-		player.moveToPoint(new PVector(100, player.getPixelPos().y));
-		player.cutScene = true;
 		wave.bossFight = true;
 		wave.finalBoss = bosses.get(levelNumber-1);
-		animationElapsed ++;
+		player.stop();
+		player.moveToPoint(moveToVector);
+		player.cutScene = true;
+		animationElapsed++;
+	}
+
+	void showAnimation(){
+		player.stop();
+		player.moveToPoint(moveToVector);
+		player.cutScene = true;
+		animationElapsed2++;
 	}
 
 	int secondsToWave(){
@@ -132,7 +157,7 @@ class Level{
 		if (flock.agents.size() == 0){
 			waveCurrent++;
 			PLAYER_POINTS = player.score;
-			wave = new Wave(flock, 10, 20, FRAME_RATE * SECONDS_TO_WAVE, wave.sortedDnas);
+			wave = new Wave(flock, WAVE_ACTIVE_COST, WAVE_GLOBAL_COST, FRAME_RATE * SECONDS_TO_WAVE, wave.sortedDnas);
 			wave.enemyImage = enemyImage;
 		}
 	}
