@@ -43,7 +43,7 @@ class Level{
 		completed = false;
 		animationElapsed = 0;
 		animationTime = ((int)3 * FRAME_RATE);
-		animationTime2 = SECONDS_TO_WAVE * FRAME_RATE;
+		animationTime2 = ((int)3.82 * FRAME_RATE);
 		worldAngle = 0;
 		if (levelNumber > 0 && levelNumber <= GAME_LEVELS){
 			worldImage = loadImage(mediaPath + "/bg.png");
@@ -119,8 +119,6 @@ class Level{
 			showAnimation();
 			startBossFight();
 		}else if (animationElapsed2 < animationTime2){
-			println("animationElapsed2: "+animationElapsed2);
-			println("animationTime2: "+animationTime2);
 			showAnimation();
 		}
 		if (animationElapsed >= animationTime || animationElapsed2 >= animationTime2){
