@@ -1,7 +1,6 @@
 class Sierpinski extends Boss{
 	ArrayList<PVector> points;
 	ArrayList<PVector> pointsDisplay;
-	ArrayList<Enemy> enemies;
 	PVector start;
 
 	int pointLimit;
@@ -37,14 +36,6 @@ class Sierpinski extends Boss{
 		}
 	}
 
-	void cleanEnemies(){
-		for(Enemy e: enemies){
-			e.dead  = true;
-			currentLevel.addToGarbage(e);
-		}
-		enemies = new ArrayList();
-	}
-
 	PVector getPoint(){
 		int index = int(random(pointsDisplay.size()));
 		return pointsDisplay.get(index);
@@ -69,5 +60,9 @@ class Sierpinski extends Boss{
 		}else{
 			initEnemies();
 		}
+	}
+
+	Boss resetBoss(){
+		return new Sierpinski(initHp);
 	}
 }

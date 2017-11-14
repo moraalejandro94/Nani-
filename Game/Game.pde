@@ -71,7 +71,7 @@ void box2dInit() {
 
 // Inicializa el jugador y los elementos del juego
 void gameInit(){
-	gameWon = loadImage("Images/gameWon.png");
+	gameWon = loadImage("Images/gameWon.jpg");
 	gameWon.resize(width, height);
 	gameOver = loadImage("Images/gameOver.jpg");
 	gameOver.resize(width, height);

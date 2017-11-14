@@ -104,12 +104,7 @@ class Level{
 			nextWave();
 		}
 		if (waveCurrent == waveAmmount  && animationElapsed < animationTime){
-			player.stop();
-			player.moveToPoint(new PVector(100, player.getPixelPos().y));
-			player.cutScene = true;
-			wave.bossFight = true;
-			wave.finalBoss = bosses.get(levelNumber-1);
-			animationElapsed ++;
+			startBossFight();
 		}
 		if (animationElapsed >= animationTime){
 			player.cutScene = false;
@@ -118,6 +113,15 @@ class Level{
 		for (Projectile p  : player.projectiles){
 			p.update();
 		}
+	}
+
+	void startBossFight(){
+		player.stop();
+		player.moveToPoint(new PVector(100, player.getPixelPos().y));
+		player.cutScene = true;
+		wave.bossFight = true;
+		wave.finalBoss = bosses.get(levelNumber-1);
+		animationElapsed ++;
 	}
 
 	int secondsToWave(){
@@ -217,7 +221,12 @@ class Level{
 	}
 
 	void resetWave(){
-		if (wave.bossFight){	
+		if (wave.bossFight){
+			Boss newBoss = wave.finalBoss.resetBoss();
+			wave.finalBoss.cleanEnemies();
+			bosses.set(levelNumber-1, newBoss);
+			wave.finalBoss = newBoss;
+			startBossFight();
 		}else{
 			for (Enemy e: flock.agents){
 				e.dead = true;
@@ -225,7 +234,6 @@ class Level{
 			}
 			wave = (wave.parents == null) ? new Wave(flock, wave.costActive, wave.costGlobal, FRAME_RATE * SECONDS_TO_WAVE) : new Wave(flock, wave.costActive, wave.costGlobal, FRAME_RATE * SECONDS_TO_WAVE, wave.parents);
 			wave.enemyImage = enemyImage;
-
 		}
 		player.score = PLAYER_POINTS;
 		player.recovering = false;
