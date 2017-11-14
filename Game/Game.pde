@@ -183,6 +183,8 @@ void beginContact(Contact c) {
 	CollidingObject o1 = objectFromFixture(c.getFixtureA());
 	CollidingObject o2 = objectFromFixture(c.getFixtureB());
 	if (o1 instanceof Player){
+		c.getFixtureA().setDensity(1000000000);
+		c.getFixtureA().getBody().resetMassData();
 		checkPlayer(o2);
 	}else if(o1 instanceof Enemy){
 		checkEnemy((Enemy) o1, o2);
@@ -196,7 +198,10 @@ void checkPlayer(CollidingObject object){
 	if (!player.boosting){
 		player.decreaseHP();
 		if (object instanceof Enemy){
-			((Enemy) object).playerHit();
+			Enemy e = ((Enemy) object);
+			e.playerHit();
+			e.dead = true;
+			checkEnemy(e);
 		}
 		else if (object instanceof Projectile){
 			Projectile projectile = (Projectile) object;
@@ -256,4 +261,14 @@ void keyReleased(){
 	keys[keyCode] = false;
 }
 
-void endContact(Contact c) {}
+void endContact(Contact c) {
+	Fixture f1 = c.getFixtureA();
+	Body b1 = f1.getBody();
+	f1.setDensity(0);
+	b1.resetMassData();
+
+	f1 = c.getFixtureB();
+	b1 = f1.getBody();
+	f1.setDensity(0);
+	b1.resetMassData();
+}
