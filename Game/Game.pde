@@ -21,9 +21,9 @@ int GAME_LEVELS = 3;
 boolean GAME_OVER = false;
 boolean GAME_WON = false;
 
-int WAVE_ACTIVE_COST = 10;
-int WAVE_GLOBAL_COST = 20;
-int WAVES_PER_LEVEL = 1;
+int WAVE_ACTIVE_COST = 50;
+int WAVE_GLOBAL_COST = 200;
+int WAVES_PER_LEVEL = 5;
 int SECONDS_TO_WAVE = 6;
 
 PImage gameWon;
@@ -40,7 +40,7 @@ Level currentLevel;
 
 Menu menu;
 int currentSkin = 1;
-int maxSkins = 6;
+int maxSkins = 7;
 
 color pointsColor;
 

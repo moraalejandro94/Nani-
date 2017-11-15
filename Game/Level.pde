@@ -44,6 +44,7 @@ class Level{
 		animationElapsed = 0;
 		animationTime = ((int)3 * FRAME_RATE);
 		animationTime2 = ((int)3.82 * FRAME_RATE);
+
 		worldAngle = 0;
 		if (levelNumber > 0 && levelNumber <= GAME_LEVELS){
 			worldImage = loadImage(mediaPath + "/bg.png");
@@ -67,6 +68,7 @@ class Level{
 		objects.add(player);
 
 		wave = new Wave(flock, WAVE_ACTIVE_COST, WAVE_GLOBAL_COST, FRAME_RATE * SECONDS_TO_WAVE);
+		//wave = (wave != null && wave.parents != null) ? new Wave(flock, WAVE_ACTIVE_COST, WAVE_GLOBAL_COST, FRAME_RATE * SECONDS_TO_WAVE, wave.parents) : new Wave(flock, WAVE_ACTIVE_COST, WAVE_GLOBAL_COST, FRAME_RATE * SECONDS_TO_WAVE) ;
 		wave.enemyImage = enemyImage;
 
 		moveToVector = new PVector(width/2, height/2);
@@ -134,6 +136,7 @@ class Level{
 	void startBossFight(){
 		wave.bossFight = true;
 		wave.finalBoss = bosses.get(levelNumber-1);
+		wave.finalBoss.hp = 5;
 		player.stop();
 		player.moveToPoint(moveToVector);
 		player.cutScene = true;

@@ -9,7 +9,7 @@ class Player extends Ship implements UserInput{
 
 	Player(float x, float y, float mass){
 		super(x, y, mass);
-		hp = 3;
+		hp = 15;
 		score = 0;
 		recoveryTime = 120;
 		blinkElapsed = 0;

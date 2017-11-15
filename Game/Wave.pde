@@ -24,6 +24,9 @@ class Wave{
 	boolean bossFight;
 	Boss finalBoss;
 
+	int animationElapsed3;
+	int animationTime3;
+
 	Wave(Flock flock, int costActive, int costGlobal, int elapse){
 		generalInit(flock, costActive, costGlobal, elapse);
 		createDna();
@@ -43,6 +46,8 @@ class Wave{
 		currEnemy = 0;
 		cleared = false;
 		bossFight = false;
+		animationTime3 = ((int)3 * FRAME_RATE);
+		animationElapsed3 = 0;
 	}
 
 	void createDna(){
@@ -95,13 +100,17 @@ class Wave{
 	}
 
 	EnemyDna combine(EnemyDna parent1, EnemyDna parent2){
-		float parent1Percent = random(0.420, 0.69);
+		float parent1Percent = getMutationRate();
 		float parent2Percent = 1 - parent1Percent;		
 		float childSpeed = parent1Percent*parent1.speed + parent2Percent * parent2.speed;
 		float childTurnSpeed = parent1Percent*parent1.turnSpeed + parent2Percent * parent2.turnSpeed;
 		float childShootElapsed = parent1Percent * parent1.shootElapsed + parent2Percent * parent2.shootElapsed;
 		EnemyDna child = new EnemyDna(childSpeed, childTurnSpeed, childShootElapsed);
 		return child;
+	}
+
+	float getMutationRate(){
+		return random(0.2, 0.5);
 	}
 
 	void nextParentSelection(int size){

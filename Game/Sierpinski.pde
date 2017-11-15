@@ -48,8 +48,7 @@ class Sierpinski extends Boss{
 			ellipse(p.x, p.y, 10, 10);
 			colorMode(RGB);
 		}
-		fill(255,0,0);
-		rect(width - 200, 50, hp *10, 20);
+		displayHP();
 	}
 
 	color getPointColor(PVector p){

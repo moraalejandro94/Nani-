@@ -109,8 +109,7 @@ class Automata extends Boss{
 			}
 		}
 		colorMode(RGB);
-		fill(255,0,0);
-		rect(width - 200, 50, hp *10, 20);
+		displayHP();
 	}
 	
 	AutomataCell createCell(float x, float y, float w) {
@@ -215,7 +214,7 @@ class Automata extends Boss{
 	}
 
 	Boss resetBoss(){
-		return new Automata(initHp, w);
+		return new Automata(initHp, w, rainbow);
 	}
 
 

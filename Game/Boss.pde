@@ -21,6 +21,13 @@ abstract class Boss{
 		enemies = new ArrayList();
 	}
 
+	void displayHP(){
+		fill(255,0,0);
+		rectMode(CORNER);
+		float hpToDeath = hp * 30;
+		rect(width - hpToDeath, 50, hpToDeath, 20);
+	}
+
 
 	void cleanEnemiesAndProjectiles(){
 		for(Enemy e: enemies){
