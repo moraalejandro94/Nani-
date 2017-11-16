@@ -6,6 +6,8 @@ class Flock extends GameObject {
 	int alignCount, separationCount, cohesionCount, maxEnemys;
 	Player player;
 
+	Flock(){}
+
 	Flock(Player player, float maxForce){		
 		super(0, 0, 0);
 		agents = new ArrayList();

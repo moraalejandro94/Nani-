@@ -10,6 +10,8 @@ class ParticleSystem extends GameObject{
 	float offsetY;
 	PVector force;
 
+	ParticleSystem(){}
+
 	ParticleSystem(float x, float y, int maxParticles){
 		super(x, y, 0);
 		origin = new PVector(x, y);

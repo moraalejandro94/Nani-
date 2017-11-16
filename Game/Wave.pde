@@ -27,6 +27,8 @@ class Wave{
 	int animationElapsed3;
 	int animationTime3;
 
+	Wave(){}
+
 	Wave(Flock flock, int costActive, int costGlobal, int elapse){
 		generalInit(flock, costActive, costGlobal, elapse);
 		createDna();

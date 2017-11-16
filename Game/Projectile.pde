@@ -1,6 +1,8 @@
 class Projectile extends CollidingObject{
 	Vec2 force;
 	Ship owner;
+
+	Projectile(){}
 	
 	Projectile(float posX, float posY, float mass, Vec2 force, Ship owner){
 		super(posX,posY,mass);

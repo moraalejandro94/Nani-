@@ -4,6 +4,8 @@ abstract class Boss{
 	String name; 	
 	ArrayList<Enemy> enemies;
 
+	Boss(){}
+	
 	Boss(int hp){
 		this.hp = hp;
 		initHp = hp;

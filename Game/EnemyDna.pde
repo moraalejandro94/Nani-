@@ -8,6 +8,8 @@ class EnemyDna {
 	int score;
 	int playerHits; 
 
+	EnemyDna(){}
+
 	EnemyDna(float speed, float turnSpeed, float shootElapsed){
 		this.speed = speed;
 		this.turnSpeed = turnSpeed;

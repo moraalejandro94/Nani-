@@ -4,6 +4,8 @@ class Particle extends GameObject{
 	float maxSpeed;
 	boolean seekPlayer;
 
+	Particle(){}
+
 	Particle(float x, float y, float mass){
 		super(x, y, mass);
 		this.speed = new PVector(0,0);

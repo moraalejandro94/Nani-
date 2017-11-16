@@ -20,6 +20,8 @@ class Automata extends Boss{
 	float xOfset;
 	float yOfset;
 
+	Automata(){}
+
 	Automata(int hp, float w) {
 		super(hp);
 

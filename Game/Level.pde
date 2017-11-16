@@ -26,6 +26,8 @@ class Level{
 
 	boolean completed;
 	boolean newLevel;
+
+	Level(){}
 	
 	Level(Player player, int waveAmmount, int levelNumber){
 		this.player = player;

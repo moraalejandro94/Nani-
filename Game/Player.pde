@@ -6,10 +6,11 @@ class Player extends Ship implements UserInput{
 	boolean cutScene;
 	int boostTime, boostAvailable, boostRecharge, boostRechargeElapsed;	
 
+	Player(){}
 
 	Player(float x, float y, float mass){
 		super(x, y, mass);
-		hp = 15;
+		hp = 30000;
 		score = 0;
 		recoveryTime = 120;
 		blinkElapsed = 0;

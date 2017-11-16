@@ -5,6 +5,8 @@ class Sierpinski extends Boss{
 
 	int pointLimit;
 
+	Sierpinski(){}
+
 	Sierpinski(int hp){
 		super(hp);
 		name = "Wacław Sierpiński";

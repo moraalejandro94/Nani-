@@ -6,7 +6,7 @@ class Menu{
 	PImage previousButtonImage;
 	PImage startButtonImage;
 
-	public Menu() {
+	Menu() {
 		nextButtonImage = loadImage("Images/Buttons/next.png");
 		previousButtonImage = loadImage("Images/Buttons/previous.png");
 		startButtonImage = loadImage("Images/Buttons/start.png");

@@ -6,6 +6,8 @@ class AutomataCell{
 	int newState;
 	boolean isEnemy;
 
+	AutomataCell(){}
+
 	AutomataCell(float x, float y, float w, int state) {
 		this.x = x;
 		this.y = y;

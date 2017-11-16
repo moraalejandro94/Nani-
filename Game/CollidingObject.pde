@@ -7,7 +7,8 @@ class CollidingObject extends GameObject{
 	PVector speed;
 
 	int bodyType;
-
+	CollidingObject(){}
+	
 	CollidingObject(float x, float y, float mass) {
 		super(x,y, mass);
 		speed = new PVector(0, 0);

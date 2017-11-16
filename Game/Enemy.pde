@@ -4,6 +4,8 @@ class Enemy extends Ship {
 	color c; 
 	float headginAngle;
 
+	Enemy(){}
+
 	Enemy (float x, float y, float mass){
 		super(x,y,mass);
 		headginAngle = 0;

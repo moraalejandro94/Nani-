@@ -8,6 +8,7 @@ class Ship extends CollidingObject{
 
 	PImage shipImage;
 
+	Ship(){}
 
 	Ship(float x, float y, float mass){
 		super(x, y, mass);

@@ -2,6 +2,8 @@ class Seeker extends Enemy {
 	float rotationSpeed;
 	boolean movable ;
 
+	Seeker(){}
+
 	Seeker(float x, float y, float mass, float rotationSpeed){
 		super(x,y,mass);
 		this.rotationSpeed = rotationSpeed;
