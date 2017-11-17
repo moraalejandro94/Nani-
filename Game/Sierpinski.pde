@@ -44,7 +44,14 @@ class Sierpinski extends Boss{
 	}
 
 	void deathAnimation(){
-		println("print caca");
+		for(int i=0; i < pointsDisplay.size(); i++){
+			PVector p = pointsDisplay.get(i);
+			p.x += random(-3, 3);
+			p.y += random(-3, 3);
+			if (i%2 == 0){
+				p.y += 1.5;
+			}
+		}
 	}
 
 	void display(){
