@@ -14,6 +14,7 @@ abstract class Boss{
 	abstract void display();
 	abstract void update();
 	abstract Boss resetBoss();
+	abstract void deathAnimation();
 
 	void cleanEnemies(){
 		for(Enemy e: enemies){

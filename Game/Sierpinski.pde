@@ -11,7 +11,7 @@ class Sierpinski extends Boss{
 		super(hp);
 		name = "Wacław Sierpiński";
 
-		pointLimit = 420;
+		pointLimit = 2500;
 
 		points = new ArrayList();
 		pointsDisplay = new ArrayList()
@@ -23,11 +23,11 @@ class Sierpinski extends Boss{
 	}
 
 	void initEnemies(){
-		if (frameCount % (60*10) == 0){	
+		if (frameCount % (60*(hp + 1)) == 0){	
 			cleanEnemies();
 			for (int i = 0; i < hp; i++){
 				PVector sPoint = getPoint();
-				Seeker s = new Seeker(sPoint.x, sPoint.y ,0, 0.9 * god.speed, 20);
+				Seeker s = new Seeker(sPoint.x, sPoint.y ,0, 0.9 * god.speed, 50, true, 0);
 				s.normalSpeed = 0;
 				s.dna = god;			
 				s.score = 1;
@@ -43,11 +43,15 @@ class Sierpinski extends Boss{
 		return pointsDisplay.get(index);
 	}
 
+	void deathAnimation(){
+		println("print caca");
+	}
+
 	void display(){
 		for (PVector p: pointsDisplay){
 			color c = getPointColor(p);
 			fill(c);
-			ellipse(p.x, p.y, 10, 10);
+			ellipse(p.x, p.y, 5, 5);
 			colorMode(RGB);
 		}
 		displayHP();

@@ -63,6 +63,10 @@ class Automata extends Boss{
 		}
 	} 
 
+	void deathAnimation(){
+		
+	}
+
 	color getCellColorCenter(int rowNumber, int colNumber){
 		int centerRow = (int)rows/2;
 		int centerCol = (int)columns/2;

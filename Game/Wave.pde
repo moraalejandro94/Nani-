@@ -24,8 +24,9 @@ class Wave{
 	boolean bossFight;
 	Boss finalBoss;
 
-	int animationElapsed3;
-	int animationTime3;
+	int animationElapsed;
+	int animationTime;
+	boolean bossAnimation;
 
 	Wave(){}
 
@@ -48,8 +49,9 @@ class Wave{
 		currEnemy = 0;
 		cleared = false;
 		bossFight = false;
-		animationTime3 = ((int)3 * FRAME_RATE);
-		animationElapsed3 = 0;
+		animationTime = ((int)5 * FRAME_RATE);
+		animationElapsed = 0;
+		bossAnimation = false;
 	}
 
 	void createDna(){
@@ -129,9 +131,20 @@ class Wave{
 	}
 
 	void update(){
-		if (bossFight){
+		if (bossAnimation && animationElapsed < animationTime){
+			finalBoss.deathAnimation();
+			player.boosting = true;
+			animationElapsed++;
+		}else if (bossAnimation){
+			currentLevel.completed = true;
+		}else if (bossFight){
 			finalBoss.update();
-			currentLevel.completed =finalBoss.hp <= 0;
+			if (finalBoss.hp <= 0){
+				bossAnimation = true;
+				animationElapsed = 0;
+				finalBoss.cleanEnemies();
+			}
+
 		}else if (frameCount % 60 == 0 && currEnemy < dnas.size() && startElapse <= 0 && currentCost() < costActive){
 			EnemyDna currDna = dnas.get(currEnemy);
 			Seeker s = new Seeker(width, random(0, height) ,currDna.turnSpeed * god.turnSpeed, currDna.speed * god.speed, (int)( (god.shootElapsed / currDna.shootElapsed) ));			

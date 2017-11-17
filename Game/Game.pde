@@ -23,7 +23,7 @@ boolean GAME_WON = false;
 
 int WAVE_ACTIVE_COST = 50;
 int WAVE_GLOBAL_COST = 200;
-int WAVES_PER_LEVEL = 5;
+int WAVES_PER_LEVEL = 3;
 int SECONDS_TO_WAVE = 6;
 
 PImage gameWon;
@@ -50,7 +50,7 @@ boolean[] keys = new boolean[1024];
 
 void setup(){
 	frameRate(FRAME_RATE);
-	fullScreen(P2D);
+	fullScreen();
 	background(0);
 	box2dInit();
 	gameInit();
