@@ -21,8 +21,8 @@ int GAME_LEVELS = 3;
 boolean GAME_OVER = false;
 boolean GAME_WON = false;
 
-int WAVE_ACTIVE_COST = 50;
-int WAVE_GLOBAL_COST = 200;
+int WAVE_ACTIVE_COST = 80;
+int WAVE_GLOBAL_COST = 300;
 int WAVES_PER_LEVEL = 3;
 int SECONDS_TO_WAVE = 6;
 
@@ -50,7 +50,7 @@ boolean[] keys = new boolean[1024];
 
 void setup(){
 	frameRate(FRAME_RATE);
-	fullScreen();
+	fullScreen(P3D);
 	background(0);
 	box2dInit();
 	gameInit();

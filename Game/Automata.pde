@@ -15,6 +15,8 @@ class Automata extends Boss{
 	int updateTime = FRAME_RATE * 2;
 	int enemiesTime = FRAME_RATE;
 	int enemieNumber = 4;
+	int deathEllapsed = 0;
+	int deathTime = FRAME_RATE*4;
 	boolean rainbow;
 
 	float xOfset;
@@ -64,7 +66,29 @@ class Automata extends Boss{
 	} 
 
 	void deathAnimation(){
-		
+		fill(255,0,0);
+		for (int r = 0; r < rows; r++) {
+			for (int c = 0; c < columns; c++) {
+				colorMode(HSB);
+				if (rainbow){					
+					color co = getCellColorCenter(r,c);
+					fill(co);
+					cells[r][c].display(co);				
+				}
+				else{					
+					cells[r][c].display();
+					if (deathEllapsed < deathTime){
+						cells[r][c].x += random(-2, 2);
+						cells[r][c].y += random(-2, 2);				
+					}					
+					else {
+						cells[r][c].x += random(-8, 8);
+						cells[r][c].y += random(-8 , 8);							
+					}						
+				}
+			}
+		}
+		deathEllapsed++;		
 	}
 
 	color getCellColorCenter(int rowNumber, int colNumber){
@@ -116,6 +140,10 @@ class Automata extends Boss{
 		}
 		colorMode(RGB);
 		displayHP();
+		if (hp == 0){
+			deathAnimation();
+			resetCells();
+		}
 	}
 	
 	AutomataCell createCell(float x, float y, float w) {
